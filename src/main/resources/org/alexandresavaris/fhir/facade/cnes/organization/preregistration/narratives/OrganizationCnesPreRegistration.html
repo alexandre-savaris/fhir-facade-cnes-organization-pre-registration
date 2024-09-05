@@ -29,7 +29,7 @@ a browser.
         </table>
     </th:block>
     <!-- Type. -->
-    <th:block th:unless="${#arrays.isEmpty(resource.type)}">
+<!--    <th:block th:unless="${#arrays.isEmpty(resource.type)}">
         <br />
         <div class="hapiSubHeaderText" th:text="'Tipo de Estabelecimento'"/>
         <table class="hapiPropertyTable">
@@ -46,7 +46,7 @@ a browser.
                 </div>
             </tbody>
         </table>
-    </th:block>
+    </th:block>-->
     <!-- Identifiers. -->
     <th:block th:unless="${#arrays.isEmpty(resource.identifier)}">
         <br />
@@ -91,11 +91,11 @@ a browser.
                                 <div th:if="${#strings.length(extensionLevel1.value.code) > 2}">
                                     <td th:text="'Código do Município no IBGE'"></td>
                                 </div>
-                                <div th:unless="${#strings.length(extensionLevel1.value.code) > 2}">
+<!--                                <div th:unless="${#strings.length(extensionLevel1.value.code) > 2}">
                                     <td th:text="'Código da UF no IBGE'"></td>
-                                </div>
+                                </div>-->
                             </div>
-                            <th:block th:unless="${#arrays.isEmpty(extensionLevel1.extension)}">
+<!--                            <th:block th:unless="${#arrays.isEmpty(extensionLevel1.extension)}">
                                 <tr>
                                     <td colspan="2" style="border: 0px">&nbsp;</td>
                                 </tr>
@@ -108,7 +108,7 @@ a browser.
                                         </div>
                                     </div>
                                 </tr>
-                            </th:block>
+                            </th:block>-->
                         </tr>
                     </th:block>
                 </div>
@@ -116,7 +116,7 @@ a browser.
         </table>
     </th:block>
     <!-- Contact. -->
-    <th:block th:unless="${#arrays.isEmpty(resource.contact)}">
+<!--    <th:block th:unless="${#arrays.isEmpty(resource.contact)}">
         <br />
         <div class="hapiSubHeaderText" th:text="'Contatos'"/>
         <table class="hapiPropertyTable">
@@ -140,9 +140,9 @@ a browser.
                 </tr>
             </tbody>
         </table>
-    </th:block>
+    </th:block>-->
     <!-- SUS. -->
-    <th:block th:unless="${resource.isSus} == null OR ${resource.clientFlow} == null">
+<!--    <th:block th:unless="${resource.isSus} == null OR ${resource.clientFlow} == null">
         <br />
         <div class="hapiSubHeaderText" th:text="'Sistema Único de Saúde'"/>
         <table class="hapiPropertyTable">
@@ -160,9 +160,9 @@ a browser.
                 </tr>
             </tbody>
         </table>
-    </th:block>
+    </th:block>-->
     <!-- Director. -->
-    <th:block th:unless="${resource.directorCpf} == null OR ${resource.directorName} == null">
+<!--    <th:block th:unless="${resource.directorCpf} == null OR ${resource.directorName} == null">
         <br />
         <div class="hapiSubHeaderText" th:text="'Diretor'"/>
         <table class="hapiPropertyTable">
@@ -177,9 +177,9 @@ a browser.
                 </tr>
             </tbody>
         </table>
-    </th:block>
+    </th:block>-->
     <!-- Extensions - Specialized Services. -->
-    <th:block th:unless="${#arrays.isEmpty(resource.specializedServices)}">
+<!--    <th:block th:unless="${#arrays.isEmpty(resource.specializedServices)}">
         <br />
         <div class="hapiSubHeaderText" th:text="'Serviços Especializados'"/>
         <table class="hapiPropertyTable">
@@ -216,7 +216,7 @@ a browser.
                 </div>
             </tbody>
         </table>
-    </th:block>
+    </th:block>-->
     <!-- Update date. -->
     <th:block th:unless="${resource.updateDate} == null">
         <br />

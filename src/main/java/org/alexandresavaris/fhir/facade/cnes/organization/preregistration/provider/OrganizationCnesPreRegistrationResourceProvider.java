@@ -188,17 +188,17 @@ public class OrganizationCnesPreRegistrationResourceProvider
                     .setValue(cnes);
             }
 
-            // CodigoUnidade -> Identifier: Unity code.
-            String unityCode =
-                extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("unityCode"),
-                    0
-                );
-            if (unityCode != null) {
-                retVal.addIdentifier()
-                    .setSystem(Utils.namingSystems.get("unityCode"))
-                    .setValue(unityCode);
-            }
+//            // CodigoUnidade -> Identifier: Unity code.
+//            String unityCode =
+//                extractSingleValueFromXml(document, xpath,
+//                    Utils.xpathExpressions.get("unityCode"),
+//                    0
+//                );
+//            if (unityCode != null) {
+//                retVal.addIdentifier()
+//                    .setSystem(Utils.namingSystems.get("unityCode"))
+//                    .setValue(unityCode);
+//            }
 
             // numeroCNPJ -> Identifier: CNPJ.
             String cnpj
@@ -294,57 +294,57 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 );
                 address.addExtension(cityCodeIbgeExtension);
             }
-            String stateCodeIbge
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("stateCodeIbge"),
-                    0
-                );
-            if (stateCodeIbge != null) {
-                Extension stateCodeIbgeExtension
-                    = new Extension(Utils.extensions.get("stateCodeIbge"));
-                stateCodeIbgeExtension.setValue(
-                    new Coding()
-                        .setSystem("urn:oid:" + Utils.oids.get("ibgeCode"))
-                        .setCode(stateCodeIbge)
-                        .setDisplay(
-                            new String(
-                                "Código da UF no IBGE".getBytes("ISO-8859-1"),
-                                "UTF-8"
-                            )
-                        )
-                );
-                address.addExtension(stateCodeIbgeExtension);
-            }
+//            String stateCodeIbge
+//                = extractSingleValueFromXml(document, xpath,
+//                    Utils.xpathExpressions.get("stateCodeIbge"),
+//                    0
+//                );
+//            if (stateCodeIbge != null) {
+//                Extension stateCodeIbgeExtension
+//                    = new Extension(Utils.extensions.get("stateCodeIbge"));
+//                stateCodeIbgeExtension.setValue(
+//                    new Coding()
+//                        .setSystem("urn:oid:" + Utils.oids.get("ibgeCode"))
+//                        .setCode(stateCodeIbge)
+//                        .setDisplay(
+//                            new String(
+//                                "Código da UF no IBGE".getBytes("ISO-8859-1"),
+//                                "UTF-8"
+//                            )
+//                        )
+//                );
+//                address.addExtension(stateCodeIbgeExtension);
+//            }
             
-            // Geolocation extensions.
-            String latitude
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("latitude"),
-                    0
-                );
-            String longitude
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("longitude"),
-                    0
-                );
-            if (latitude != null && longitude != null) {
-                Extension geolocationExtension
-                    = new Extension(Utils.extensions.get("geolocation"));
-                Extension latitudeExtension
-                    = new Extension(Utils.extensions.get("latitude"));
-                latitudeExtension.setValue(
-                    new DecimalType(latitude)
-                );
-                Extension longitudeExtension
-                    = new Extension(Utils.extensions.get("longitude"));
-                longitudeExtension.setValue(
-                    new DecimalType(longitude)
-                );
-                geolocationExtension.addExtension(latitudeExtension);
-                geolocationExtension.addExtension(longitudeExtension);
-                // Completing the address to be returned.
-                address.addExtension(geolocationExtension);
-            }
+//            // Geolocation extensions.
+//            String latitude
+//                = extractSingleValueFromXml(document, xpath,
+//                    Utils.xpathExpressions.get("latitude"),
+//                    0
+//                );
+//            String longitude
+//                = extractSingleValueFromXml(document, xpath,
+//                    Utils.xpathExpressions.get("longitude"),
+//                    0
+//                );
+//            if (latitude != null && longitude != null) {
+//                Extension geolocationExtension
+//                    = new Extension(Utils.extensions.get("geolocation"));
+//                Extension latitudeExtension
+//                    = new Extension(Utils.extensions.get("latitude"));
+//                latitudeExtension.setValue(
+//                    new DecimalType(latitude)
+//                );
+//                Extension longitudeExtension
+//                    = new Extension(Utils.extensions.get("longitude"));
+//                longitudeExtension.setValue(
+//                    new DecimalType(longitude)
+//                );
+//                geolocationExtension.addExtension(latitudeExtension);
+//                geolocationExtension.addExtension(longitudeExtension);
+//                // Completing the address to be returned.
+//                address.addExtension(geolocationExtension);
+//            }
             
             retVal.addAddress(address);
             
@@ -360,173 +360,176 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 );
             }
 
-            // numeroCPF -> Extension (Director's CPF).
-            // NOTE: despite its availability in the original response from the
-            // SOAP Webservice, the Director's CPF is considered personal data
-            // and is replaced by a fake one.
-            retVal.setDirectorCpf(
-                new Coding()
-                    .setSystem("urn:oid:" + Utils.oids.get("cpf"))
-                    .setCode("42424242424")
-                    .setDisplay(
-                        new String(
-                            "Número do CPF do Diretor".getBytes("ISO-8859-1"),
-                            "UTF-8"
-                        )
-                    )
-            );
+//            // numeroCPF -> Extension (Director's CPF).
+//            // NOTE: despite its availability in the original response from the
+//            // SOAP Webservice, the Director's CPF is considered personal data
+//            // and is replaced by a fake one.
+//            retVal.setDirectorCpf(
+//                new Coding()
+//                    .setSystem("urn:oid:" + Utils.oids.get("cpf"))
+//                    .setCode("42424242424")
+//                    .setDisplay(
+//                        new String(
+//                            "Número do CPF do Diretor".getBytes("ISO-8859-1"),
+//                            "UTF-8"
+//                        )
+//                    )
+//            );
 
-            // Nome -> Extension (Director's name).
-            // NOTE: despite its availability in the original response from the
-            // SOAP Webservice, the Director's name is considered personal data
-            // and is replaced by a fake one.
-            retVal.setDirectorName(
-                new HumanName().setText("Marvin the Paranoid Android")
-            );
+//            // Nome -> Extension (Director's name).
+//            // NOTE: despite its availability in the original response from the
+//            // SOAP Webservice, the Director's name is considered personal data
+//            // and is replaced by a fake one.
+//            retVal.setDirectorName(
+//                new HumanName().setText("Marvin the Paranoid Android")
+//            );
 
-            // tipoUnidade -> type.
-            String unityType
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("unityType"),
-                    0
-                );
-            if (unityType != null) {
-                retVal.addType(
-                    new CodeableConcept(
-                        new Coding()
-                            .setSystem(Utils.valueSets.get("type"))
-                            .setCode(unityType)
-                            .setDisplay(
-                                extractSingleValueFromXml(document, xpath,
-                                    Utils.xpathExpressions.get(
-                                        "unityDescription"
-                                    ),
-                                    0
-                                )
-                            )
-                    )
-                );
-            }
+//            // tipoUnidade -> type.
+//            String unityType
+//                = extractSingleValueFromXml(document, xpath,
+//                    Utils.xpathExpressions.get("unityType"),
+//                    0
+//                );
+//            if (unityType != null) {
+//                retVal.addType(
+//                    new CodeableConcept(
+//                        new Coding()
+//                            .setSystem(Utils.valueSets.get("type"))
+//                            .setCode(unityType)
+//                            .setDisplay(
+//                                extractSingleValueFromXml(document, xpath,
+//                                    Utils.xpathExpressions.get(
+//                                        "unityDescription"
+//                                    ),
+//                                    0
+//                                )
+//                            )
+//                    )
+//                );
+//            }
                 
-            // Telefone -> contact
-            String phoneNumber
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("phoneNumber"),
-                    0
-                );
-            if (phoneNumber != null) {
-                String phoneTemplate = "{0} {1}";
-                String phone = java.text.MessageFormat.format(
-                    phoneTemplate,
-                    extractSingleValueFromXml(document, xpath,
-                        Utils.xpathExpressions.get("phoneAreaCode"),
-                        0
-                    ),
-                    phoneNumber
-                );
-                retVal.addContact()
-                    .addTelecom(
-                        new ContactPoint()
-                            .setSystem(ContactPoint.ContactPointSystem.PHONE)
-                            .setValue(phone)
-                            .setUse(ContactPoint.ContactPointUse.WORK)
-                    )
-                    .setPurpose(
-                        new CodeableConcept(
-                            new Coding()
-                                .setSystem(Utils.namingSystems.get("phoneType"))
-                                .setCode(
-                                    extractSingleValueFromXml(document, xpath,
-                                        Utils.xpathExpressions.get("phoneType"),
-                                        0
-                                    )
-                                )
-                                .setDisplay(
-                                    extractSingleValueFromXml(document, xpath,
-                                        Utils.xpathExpressions.get(
-                                            "phoneDescription"
-                                        ),
-                                        0
-                                    )
-                                )
-                        )
-                    );
-            }
+//            // Telefone -> contact
+//            String phoneNumber
+//                = extractSingleValueFromXml(document, xpath,
+//                    Utils.xpathExpressions.get("phoneNumber"),
+//                    0
+//                );
+//            if (phoneNumber != null) {
+//                String phoneTemplate = "{0} {1}";
+//                String phone = java.text.MessageFormat.format(
+//                    phoneTemplate,
+//                    extractSingleValueFromXml(document, xpath,
+//                        Utils.xpathExpressions.get("phoneAreaCode"),
+//                        0
+//                    ),
+//                    phoneNumber
+//                );
+//                retVal.addContact()
+//                    .addTelecom(
+//                        new ContactPoint()
+//                            .setSystem(ContactPoint.ContactPointSystem.PHONE)
+//                            .setValue(phone)
+//                            .setUse(ContactPoint.ContactPointUse.WORK)
+//                    )
+//                    .setPurpose(
+//                        new CodeableConcept(
+//                            new Coding()
+//                                .setSystem(Utils.namingSystems.get("phoneType"))
+//                                .setCode(
+//                                    extractSingleValueFromXml(document, xpath,
+//                                        Utils.xpathExpressions.get("phoneType"),
+//                                        0
+//                                    )
+//                                )
+//                                .setDisplay(
+//                                    extractSingleValueFromXml(document, xpath,
+//                                        Utils.xpathExpressions.get(
+//                                            "phoneDescription"
+//                                        ),
+//                                        0
+//                                    )
+//                                )
+//                        )
+//                    );
+//            }
 
-            // Email -> contact
-            String email
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("email"),
-                    0
-                );
-            if (email != null) {
-                retVal.addContact()
-                    .addTelecom(
-                        new ContactPoint()
-                            .setSystem(ContactPoint.ContactPointSystem.EMAIL)
-                            .setValue(email)
-                            .setUse(ContactPoint.ContactPointUse.WORK)
-                    )
-                    .setPurpose(
-                        new CodeableConcept(
-                            new Coding()
-                                .setSystem(Utils.namingSystems.get("emailType"))
-                                .setCode(
-                                    extractSingleValueFromXml(document, xpath,
-                                        Utils.xpathExpressions.get("emailType"),
-                                        0
-                                    )
-                                )
-                        )
-                    );
-            }
+//            // Email -> contact
+//            String email
+//                = extractSingleValueFromXml(document, xpath,
+//                    Utils.xpathExpressions.get("email"),
+//                    0
+//                );
+//            if (email != null) {
+//                retVal.addContact()
+//                    .addTelecom(
+//                        new ContactPoint()
+//                            .setSystem(ContactPoint.ContactPointSystem.EMAIL)
+//                            .setValue(email)
+//                            .setUse(ContactPoint.ContactPointUse.WORK)
+//                    )
+//                    .setPurpose(
+//                        new CodeableConcept(
+//                            new Coding()
+//                                .setSystem(Utils.namingSystems.get("emailType"))
+//                                .setCode(
+//                                    extractSingleValueFromXml(document, xpath,
+//                                        Utils.xpathExpressions.get("emailType"),
+//                                        0
+//                                    )
+//                                )
+//                        )
+//                    );
+//            }
             
-            // perteceSistemaSUS -> Extension (Is the Organization part of SUS?).
-            String isSus
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("isSus"),
-                    0
-                );
-            if (isSus != null) {
-                retVal.setIsSus(
-                    new BooleanType(isSus)
-                );
-            }
+//            // perteceSistemaSUS -> Extension (Is the Organization part of SUS?).
+//            String isSus
+//                = extractSingleValueFromXml(document, xpath,
+//                    Utils.xpathExpressions.get("isSus"),
+//                    0
+//                );
+//            if (isSus != null) {
+//                retVal.setIsSus(
+//                    new BooleanType(isSus)
+//                );
+//            }
 
-            // fluxoClientela -> Extension (The client flow expected for the
-            // Organization).
-            String clientFlow
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("clientFlow"),
-                    0
-                );
-            if (clientFlow != null) {
-                retVal.setClientFlow(
-                    new CodeType(clientFlow)
-                        .setSystem(Utils.namingSystems.get("clientFlow"))
-                );
-            }
+//            // fluxoClientela -> Extension (The client flow expected for the
+//            // Organization).
+//            String clientFlow
+//                = extractSingleValueFromXml(document, xpath,
+//                    Utils.xpathExpressions.get("clientFlow"),
+//                    0
+//                );
+//            if (clientFlow != null) {
+//                retVal.setClientFlow(
+//                    new CodeType(clientFlow)
+//                        .setSystem(Utils.namingSystems.get("clientFlow"))
+//                );
+//            }
             
-            // servicoespecializados -> Extension (specializedServices).
-            XPathExpression expr
-                = xpath.compile(Utils.xpathExpressions.get("specializedService"));
-            Object result = expr.evaluate(document, XPathConstants.NODESET);
-            NodeList nodeList = (NodeList) result;
+//            // servicoespecializados -> Extension (specializedServices).
+//            XPathExpression expr
+//                = xpath.compile(Utils.xpathExpressions.get("specializedService"));
+//            Object result = expr.evaluate(document, XPathConstants.NODESET);
+//            NodeList nodeList = (NodeList) result;
             
             // For debugging purposes.
             // Uncomment to see the nodes extracted from the XML received from the
             // SOAP Webservice.
 //            printNode(nodeList, 0, "");
             
-            List<OrganizationCnesPreRegistration.SpecializedService> specializedServices
-                = new ArrayList<>();
-            fillInResourceInstanceWithSpecializedServices(nodeList, "",
-                specializedServices);
-            retVal.setSpecializedServices(specializedServices);
+//            List<OrganizationCnesPreRegistration.SpecializedService> specializedServices
+//                = new ArrayList<>();
+//            fillInResourceInstanceWithSpecializedServices(nodeList, "",
+//                specializedServices);
+//            retVal.setSpecializedServices(specializedServices);
 
-        } catch (URISyntaxException | IOException | InterruptedException
-            | ParserConfigurationException | SAXException
-            | XPathExpressionException ex) {
+        } catch (URISyntaxException
+                    | IOException
+                    | InterruptedException
+                    | ParserConfigurationException
+                    | SAXException
+                    | XPathExpressionException ex) {
             Logger.getLogger(OrganizationCnesPreRegistrationResourceProvider.class.getName())
                     .log(Level.SEVERE, null, ex);
         } 
@@ -541,7 +544,8 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 theInterceptorBroadcaster
             );
         
-        return (OrganizationCnesPreRegistration)fireStoragePreshowResource.get(0);
+        return
+            (OrganizationCnesPreRegistration)fireStoragePreshowResource.get(0);
     }
 
     // Extract a single value from the XML document based on an XPath expression.
@@ -558,194 +562,194 @@ public class OrganizationCnesPreRegistrationResourceProvider
         return nodes.item(index).getNodeValue();
     }
     
-    // Loop through the XML content and fill in the resource instance with
-    // Specialized Services.
-    private void fillInResourceInstanceWithSpecializedServices(
-        NodeList nodeList,
-        String path,
-        List<OrganizationCnesPreRegistration.SpecializedService> specializedServices)
-        throws UnsupportedEncodingException {
-
-        // Nothing to do here.
-        if (nodeList == null || nodeList.getLength() == 0) {
-            return;
-        }
-        
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Node node = nodeList.item(i);
-            path = path + "/" + node.getNodeName();
-            if (node.getNodeType() == Node.TEXT_NODE) {
-                if (
-                    path.endsWith(
-                        Utils.xpathExpressionSuffixes.get(
-                            "specializedServiceCode"
-                        )
-                    )
-                ) {
-                    // Specialized service.
-                    // For the system and code values, create a new extension
-                    // instance.
-                    specializedServices.add(new OrganizationCnesPreRegistration.SpecializedService()
-                            .setSpecializedService(
-                                new Coding()
-                                    .setSystem(
-                                        Utils.namingSystems.get(
-                                            "specializedServiceType"
-                                        )
-                                    )
-                                    .setCode(node.getNodeValue())
-                            )
-                    );
-                } else if (
-                    path.endsWith(
-                        Utils.xpathExpressionSuffixes.get(
-                            "specializedServiceDescription"
-                        )
-                    )
-                ) {
-                    // Specialized service.
-                    // For the display, use the last created extension instance
-                    // of Specialized Service.
-                    OrganizationCnesPreRegistration.SpecializedService specializedService
-                        = getLastSpecializedService(specializedServices);
-                    specializedService.getSpecializedService()
-                        .setDisplay(node.getNodeValue());
-                } else if (
-                    path.endsWith(
-                        Utils.xpathExpressionSuffixes.get(
-                            "specializedServiceClassificationCode"
-                        )
-                    )
-                ) {
-                    // Specialized service classification.
-                    // For the system and code values, retrieve the last created
-                    // extension instance of the Specialized service.
-                    // Retrieve the list of Classifications, adding a new one
-                    // afterward.
-                    List<OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification>
-                        specializedServiceClassifications
-                        = getListOfSpecializedServiceClassifications(
-                            specializedServices);
-                    specializedServiceClassifications.add(new OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification()
-                            .setSpecializedServiceClassification(
-                                new Coding()
-                                    .setSystem(
-                                        Utils.namingSystems.get(
-                                            "specializedServiceClassification"
-                                        )
-                                    )
-                                    .setCode(node.getNodeValue())
-                            )
-                    );
-                } else if (
-                    path.endsWith(
-                        Utils.xpathExpressionSuffixes.get(
-                            "specializedServiceClassificationDescription"
-                        )
-                    )
-                ) {
-                    // Specialized service classification.
-                    // For the display value, retrieve the last created
-                    // extension instance of the Specialized service
-                    // classification.
-                    OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
-                        specializedServiceClassification
-                            = getLastSpecializedServiceClassification(
-                                specializedServices
-                            );
-                    specializedServiceClassification.getSpecializedServiceClassification()
-                        .setDisplay(node.getNodeValue());
-                } else if (
-                    path.endsWith(
-                        Utils.xpathExpressionSuffixes.get(
-                            "specializedServiceClassificationCharacteristicCode"
-                        )
-                    )
-                ) {
-                    // Specialized service classification characteristic.
-                    // For the characteristic code, retrieve the last created
-                    // extension instance of the Specialized service
-                    // classification.
-                    OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
-                        specializedServiceClassification
-                            = getLastSpecializedServiceClassification(
-                                specializedServices
-                            );
-                    specializedServiceClassification.getSpecializedServiceClassificationCharacteristic()
-                        .setSystem(
-                            Utils.namingSystems.get(
-                                "specializedServiceClassificationCharacteristic"
-                            )
-                        )
-                        .setValue(node.getNodeValue());
-                } else if (
-                    path.endsWith(
-                        Utils.xpathExpressionSuffixes.get(
-                            "specializedServiceClassificationCharacteristicCnes"
-                        )
-                    )
-                ) {
-                    // Specialized service classification characteristic.
-                    // For the CNES code, retrieve the last created
-                    // extension instance of the Specialized service
-                    // classification.
-                    OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
-                        specializedServiceClassification
-                            = getLastSpecializedServiceClassification(
-                                specializedServices
-                            );
-                    specializedServiceClassification.getSpecializedServiceClassificationCnes()
-                        .setSystem("urn:oid:" + Utils.oids.get("cnes"))
-                        .setCode(node.getNodeValue())
-                        .setDisplay(
-                            new String(
-                                "Número no CNES".getBytes("ISO-8859-1"),
-                                "UTF-8"
-                            )
-                        );
-                }
-            }
-            fillInResourceInstanceWithSpecializedServices(
-                node.getChildNodes(),
-                path,
-                specializedServices);
-        }
-    }
+//    // Loop through the XML content and fill in the resource instance with
+//    // Specialized Services.
+//    private void fillInResourceInstanceWithSpecializedServices(
+//        NodeList nodeList,
+//        String path,
+//        List<OrganizationCnesPreRegistration.SpecializedService> specializedServices)
+//        throws UnsupportedEncodingException {
+//
+//        // Nothing to do here.
+//        if (nodeList == null || nodeList.getLength() == 0) {
+//            return;
+//        }
+//        
+//        for (int i = 0; i < nodeList.getLength(); i++) {
+//            Node node = nodeList.item(i);
+//            path = path + "/" + node.getNodeName();
+//            if (node.getNodeType() == Node.TEXT_NODE) {
+//                if (
+//                    path.endsWith(
+//                        Utils.xpathExpressionSuffixes.get(
+//                            "specializedServiceCode"
+//                        )
+//                    )
+//                ) {
+//                    // Specialized service.
+//                    // For the system and code values, create a new extension
+//                    // instance.
+//                    specializedServices.add(new OrganizationCnesPreRegistration.SpecializedService()
+//                            .setSpecializedService(
+//                                new Coding()
+//                                    .setSystem(
+//                                        Utils.namingSystems.get(
+//                                            "specializedServiceType"
+//                                        )
+//                                    )
+//                                    .setCode(node.getNodeValue())
+//                            )
+//                    );
+//                } else if (
+//                    path.endsWith(
+//                        Utils.xpathExpressionSuffixes.get(
+//                            "specializedServiceDescription"
+//                        )
+//                    )
+//                ) {
+//                    // Specialized service.
+//                    // For the display, use the last created extension instance
+//                    // of Specialized Service.
+//                    OrganizationCnesPreRegistration.SpecializedService specializedService
+//                        = getLastSpecializedService(specializedServices);
+//                    specializedService.getSpecializedService()
+//                        .setDisplay(node.getNodeValue());
+//                } else if (
+//                    path.endsWith(
+//                        Utils.xpathExpressionSuffixes.get(
+//                            "specializedServiceClassificationCode"
+//                        )
+//                    )
+//                ) {
+//                    // Specialized service classification.
+//                    // For the system and code values, retrieve the last created
+//                    // extension instance of the Specialized service.
+//                    // Retrieve the list of Classifications, adding a new one
+//                    // afterward.
+//                    List<OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification>
+//                        specializedServiceClassifications
+//                        = getListOfSpecializedServiceClassifications(
+//                            specializedServices);
+//                    specializedServiceClassifications.add(new OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification()
+//                            .setSpecializedServiceClassification(
+//                                new Coding()
+//                                    .setSystem(
+//                                        Utils.namingSystems.get(
+//                                            "specializedServiceClassification"
+//                                        )
+//                                    )
+//                                    .setCode(node.getNodeValue())
+//                            )
+//                    );
+//                } else if (
+//                    path.endsWith(
+//                        Utils.xpathExpressionSuffixes.get(
+//                            "specializedServiceClassificationDescription"
+//                        )
+//                    )
+//                ) {
+//                    // Specialized service classification.
+//                    // For the display value, retrieve the last created
+//                    // extension instance of the Specialized service
+//                    // classification.
+//                    OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
+//                        specializedServiceClassification
+//                            = getLastSpecializedServiceClassification(
+//                                specializedServices
+//                            );
+//                    specializedServiceClassification.getSpecializedServiceClassification()
+//                        .setDisplay(node.getNodeValue());
+//                } else if (
+//                    path.endsWith(
+//                        Utils.xpathExpressionSuffixes.get(
+//                            "specializedServiceClassificationCharacteristicCode"
+//                        )
+//                    )
+//                ) {
+//                    // Specialized service classification characteristic.
+//                    // For the characteristic code, retrieve the last created
+//                    // extension instance of the Specialized service
+//                    // classification.
+//                    OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
+//                        specializedServiceClassification
+//                            = getLastSpecializedServiceClassification(
+//                                specializedServices
+//                            );
+//                    specializedServiceClassification.getSpecializedServiceClassificationCharacteristic()
+//                        .setSystem(
+//                            Utils.namingSystems.get(
+//                                "specializedServiceClassificationCharacteristic"
+//                            )
+//                        )
+//                        .setValue(node.getNodeValue());
+//                } else if (
+//                    path.endsWith(
+//                        Utils.xpathExpressionSuffixes.get(
+//                            "specializedServiceClassificationCharacteristicCnes"
+//                        )
+//                    )
+//                ) {
+//                    // Specialized service classification characteristic.
+//                    // For the CNES code, retrieve the last created
+//                    // extension instance of the Specialized service
+//                    // classification.
+//                    OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
+//                        specializedServiceClassification
+//                            = getLastSpecializedServiceClassification(
+//                                specializedServices
+//                            );
+//                    specializedServiceClassification.getSpecializedServiceClassificationCnes()
+//                        .setSystem("urn:oid:" + Utils.oids.get("cnes"))
+//                        .setCode(node.getNodeValue())
+//                        .setDisplay(
+//                            new String(
+//                                "Número no CNES".getBytes("ISO-8859-1"),
+//                                "UTF-8"
+//                            )
+//                        );
+//                }
+//            }
+//            fillInResourceInstanceWithSpecializedServices(
+//                node.getChildNodes(),
+//                path,
+//                specializedServices);
+//        }
+//    }
     
-    // Get the last Specialized Service from the list.
-    private OrganizationCnesPreRegistration.SpecializedService getLastSpecializedService
-        (List<OrganizationCnesPreRegistration.SpecializedService> specializedServices) {
-            
-        return specializedServices.get(specializedServices.size() - 1);
-    }
+//    // Get the last Specialized Service from the list.
+//    private OrganizationCnesPreRegistration.SpecializedService getLastSpecializedService
+//        (List<OrganizationCnesPreRegistration.SpecializedService> specializedServices) {
+//            
+//        return specializedServices.get(specializedServices.size() - 1);
+//    }
         
-    // Get the list of Specialized Service Classifications from the last
-    // Specialized Service.
-    private List<OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification>
-        getListOfSpecializedServiceClassifications(
-            List<OrganizationCnesPreRegistration.SpecializedService> specializedServices) {
-            
-        OrganizationCnesPreRegistration.SpecializedService specializedService
-            = getLastSpecializedService(specializedServices);
-            
-        return specializedService.getSpecializedServiceClassifications();
-    }
+//    // Get the list of Specialized Service Classifications from the last
+//    // Specialized Service.
+//    private List<OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification>
+//        getListOfSpecializedServiceClassifications(
+//            List<OrganizationCnesPreRegistration.SpecializedService> specializedServices) {
+//            
+//        OrganizationCnesPreRegistration.SpecializedService specializedService
+//            = getLastSpecializedService(specializedServices);
+//            
+//        return specializedService.getSpecializedServiceClassifications();
+//    }
 
-    // Get the last Specialized Service Classification from the list.
-    private OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
-        getLastSpecializedServiceClassification(
-            List<OrganizationCnesPreRegistration.SpecializedService> specializedServices) {
-            
-        List<OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification>
-            specializedServiceClassifications
-                = getListOfSpecializedServiceClassifications(
-                    specializedServices
-                );
-            
-        return specializedServiceClassifications.get(
-            specializedServiceClassifications.size() - 1
-        );
-    }
+//    // Get the last Specialized Service Classification from the list.
+//    private OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
+//        getLastSpecializedServiceClassification(
+//            List<OrganizationCnesPreRegistration.SpecializedService> specializedServices) {
+//            
+//        List<OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification>
+//            specializedServiceClassifications
+//                = getListOfSpecializedServiceClassifications(
+//                    specializedServices
+//                );
+//            
+//        return specializedServiceClassifications.get(
+//            specializedServiceClassifications.size() - 1
+//        );
+//    }
         
     // For debugging purposes.
     // Uncomment to see the nodes extracted from the XML received from the
@@ -785,166 +789,6 @@ public class OrganizationCnesPreRegistrationResourceProvider
 //			xmlns:est="http://servicos.saude.gov.br/cnes/v1r0/estabelecimentosaudeservice">
 //			<dad:DadosPreCadastroCNES
 //				xmlns:dad="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
-//				<ns3:CodigoCNES
-//					xmlns:ns0="http://servicos.saude.gov.br/cnes/v1r0/estabelecimentosaudeservice"
-//					xmlns:ns2="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaestabelecimentosaude"
-//					xmlns:ns4="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/cnpj"
-//					xmlns:ns3="http://servicos.saude.gov.br/schema/cnes/v1r0/codigocnes"
-//					xmlns:ns6="http://servicos.saude.gov.br/schema/cnes/v1r0/codigounidade"
-//					xmlns:ns31="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica"
-//					xmlns:ns5="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosgeraiscnes"
-//					xmlns:ns30="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica"
-//					xmlns:ns8="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r2/endereco"
-//					xmlns:ns7="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/nomejuridico"
-//					xmlns:ns35="http://servicos.saude.gov.br/schema/cnes/v1r0/listatipounidade"
-//					xmlns:ns13="http://servicos.saude.gov.br/schema/corporativo/v1r1/uf"
-//					xmlns:ns34="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/resultadopesquisaestabelecimento.v1r0"
-//					xmlns:ns9="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/tipologradouro"
-//					xmlns:ns12="http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio"
-//					xmlns:ns33="http://servicos.saude.gov.br/wsdl/mensageria/v1/paginacao"
-//					xmlns:ns11="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/cep"
-//					xmlns:ns32="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/filtropesquisaestabelecimento.v1r0"
-//					xmlns:ns10="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/bairro"
-//					xmlns:ns17="http://servicos.saude.gov.br/schema/corporativo/pessoafisica/v1r2/nomecompleto"
-//					xmlns:ns38="http://servicos.saude.gov.br/schema/corporativo/v1r3/municipio"
-//					xmlns:ns16="http://servicos.saude.gov.br/schema/corporativo/documento/v1r2/cpf"
-//					xmlns:ns37="http://servicos.saude.gov.br/schema/corporativo/v1r2/uf"
-//					xmlns:ns15="http://servicos.saude.gov.br/schema/cnes/v1r0/diretor"
-//					xmlns:ns14="http://servicos.saude.gov.br/schema/corporativo/v1r2/pais"
-//					xmlns:ns19="http://servicos.saude.gov.br/schema/cnes/v1r0/esferaadministrativa"
-//					xmlns:ns18="http://servicos.saude.gov.br/schema/cnes/v1r0/tipounidade"
-//					xmlns:ns20="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r2/telefone"
-//					xmlns:ns24="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializados"
-//					xmlns:ns23="http://servicos.saude.gov.br/schema/cnes/v1r0/localizacao"
-//					xmlns:ns22="http://servicos.saude.gov.br/schema/corporativo/v1r2/email"
-//					xmlns:ns21="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r1/tipotelefone"
-//					xmlns:ns28="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaprecadastrocnes"
-//					xmlns:ns27="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacao"
-//					xmlns:ns26="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacoes"
-//					xmlns:ns25="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializado"
-//					xmlns:ns29="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
-//					<ns3:codigo>2691841</ns3:codigo>
-//				</ns3:CodigoCNES>
-//				<ns4:CNPJ
-//					xmlns:ns0="http://servicos.saude.gov.br/cnes/v1r0/estabelecimentosaudeservice"
-//					xmlns:ns2="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaestabelecimentosaude"
-//					xmlns:ns4="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/cnpj"
-//					xmlns:ns3="http://servicos.saude.gov.br/schema/cnes/v1r0/codigocnes"
-//					xmlns:ns6="http://servicos.saude.gov.br/schema/cnes/v1r0/codigounidade"
-//					xmlns:ns31="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica"
-//					xmlns:ns5="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosgeraiscnes"
-//					xmlns:ns30="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica"
-//					xmlns:ns8="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r2/endereco"
-//					xmlns:ns7="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/nomejuridico"
-//					xmlns:ns35="http://servicos.saude.gov.br/schema/cnes/v1r0/listatipounidade"
-//					xmlns:ns13="http://servicos.saude.gov.br/schema/corporativo/v1r1/uf"
-//					xmlns:ns34="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/resultadopesquisaestabelecimento.v1r0"
-//					xmlns:ns9="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/tipologradouro"
-//					xmlns:ns12="http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio"
-//					xmlns:ns33="http://servicos.saude.gov.br/wsdl/mensageria/v1/paginacao"
-//					xmlns:ns11="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/cep"
-//					xmlns:ns32="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/filtropesquisaestabelecimento.v1r0"
-//					xmlns:ns10="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/bairro"
-//					xmlns:ns17="http://servicos.saude.gov.br/schema/corporativo/pessoafisica/v1r2/nomecompleto"
-//					xmlns:ns38="http://servicos.saude.gov.br/schema/corporativo/v1r3/municipio"
-//					xmlns:ns16="http://servicos.saude.gov.br/schema/corporativo/documento/v1r2/cpf"
-//					xmlns:ns37="http://servicos.saude.gov.br/schema/corporativo/v1r2/uf"
-//					xmlns:ns15="http://servicos.saude.gov.br/schema/cnes/v1r0/diretor"
-//					xmlns:ns14="http://servicos.saude.gov.br/schema/corporativo/v1r2/pais"
-//					xmlns:ns19="http://servicos.saude.gov.br/schema/cnes/v1r0/esferaadministrativa"
-//					xmlns:ns18="http://servicos.saude.gov.br/schema/cnes/v1r0/tipounidade"
-//					xmlns:ns20="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r2/telefone"
-//					xmlns:ns24="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializados"
-//					xmlns:ns23="http://servicos.saude.gov.br/schema/cnes/v1r0/localizacao"
-//					xmlns:ns22="http://servicos.saude.gov.br/schema/corporativo/v1r2/email"
-//					xmlns:ns21="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r1/tipotelefone"
-//					xmlns:ns28="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaprecadastrocnes"
-//					xmlns:ns27="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacao"
-//					xmlns:ns26="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacoes"
-//					xmlns:ns25="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializado"
-//					xmlns:ns29="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
-//					<ns4:numeroCNPJ>82951245000835</ns4:numeroCNPJ>
-//				</ns4:CNPJ>
-//				<ns29:NomeFantasia
-//					xmlns:ns0="http://servicos.saude.gov.br/cnes/v1r0/estabelecimentosaudeservice"
-//					xmlns:ns2="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaestabelecimentosaude"
-//					xmlns:ns4="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/cnpj"
-//					xmlns:ns3="http://servicos.saude.gov.br/schema/cnes/v1r0/codigocnes"
-//					xmlns:ns6="http://servicos.saude.gov.br/schema/cnes/v1r0/codigounidade"
-//					xmlns:ns31="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica"
-//					xmlns:ns5="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosgeraiscnes"
-//					xmlns:ns30="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica"
-//					xmlns:ns8="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r2/endereco"
-//					xmlns:ns7="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/nomejuridico"
-//					xmlns:ns35="http://servicos.saude.gov.br/schema/cnes/v1r0/listatipounidade"
-//					xmlns:ns13="http://servicos.saude.gov.br/schema/corporativo/v1r1/uf"
-//					xmlns:ns34="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/resultadopesquisaestabelecimento.v1r0"
-//					xmlns:ns9="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/tipologradouro"
-//					xmlns:ns12="http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio"
-//					xmlns:ns33="http://servicos.saude.gov.br/wsdl/mensageria/v1/paginacao"
-//					xmlns:ns11="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/cep"
-//					xmlns:ns32="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/filtropesquisaestabelecimento.v1r0"
-//					xmlns:ns10="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/bairro"
-//					xmlns:ns17="http://servicos.saude.gov.br/schema/corporativo/pessoafisica/v1r2/nomecompleto"
-//					xmlns:ns38="http://servicos.saude.gov.br/schema/corporativo/v1r3/municipio"
-//					xmlns:ns16="http://servicos.saude.gov.br/schema/corporativo/documento/v1r2/cpf"
-//					xmlns:ns37="http://servicos.saude.gov.br/schema/corporativo/v1r2/uf"
-//					xmlns:ns15="http://servicos.saude.gov.br/schema/cnes/v1r0/diretor"
-//					xmlns:ns14="http://servicos.saude.gov.br/schema/corporativo/v1r2/pais"
-//					xmlns:ns19="http://servicos.saude.gov.br/schema/cnes/v1r0/esferaadministrativa"
-//					xmlns:ns18="http://servicos.saude.gov.br/schema/cnes/v1r0/tipounidade"
-//					xmlns:ns20="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r2/telefone"
-//					xmlns:ns24="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializados"
-//					xmlns:ns23="http://servicos.saude.gov.br/schema/cnes/v1r0/localizacao"
-//					xmlns:ns22="http://servicos.saude.gov.br/schema/corporativo/v1r2/email"
-//					xmlns:ns21="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r1/tipotelefone"
-//					xmlns:ns28="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaprecadastrocnes"
-//					xmlns:ns27="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacao"
-//					xmlns:ns26="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacoes"
-//					xmlns:ns25="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializado"
-//					xmlns:ns29="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
-//					<ns7:Nome>HOSPITAL GOVERNADOR CELSO RAMOS</ns7:Nome>
-//				</ns29:NomeFantasia>
-//				<ns29:NomeEmpresarial
-//					xmlns:ns0="http://servicos.saude.gov.br/cnes/v1r0/estabelecimentosaudeservice"
-//					xmlns:ns2="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaestabelecimentosaude"
-//					xmlns:ns4="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/cnpj"
-//					xmlns:ns3="http://servicos.saude.gov.br/schema/cnes/v1r0/codigocnes"
-//					xmlns:ns6="http://servicos.saude.gov.br/schema/cnes/v1r0/codigounidade"
-//					xmlns:ns31="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica"
-//					xmlns:ns5="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosgeraiscnes"
-//					xmlns:ns30="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica"
-//					xmlns:ns8="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r2/endereco"
-//					xmlns:ns7="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/nomejuridico"
-//					xmlns:ns35="http://servicos.saude.gov.br/schema/cnes/v1r0/listatipounidade"
-//					xmlns:ns13="http://servicos.saude.gov.br/schema/corporativo/v1r1/uf"
-//					xmlns:ns34="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/resultadopesquisaestabelecimento.v1r0"
-//					xmlns:ns9="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/tipologradouro"
-//					xmlns:ns12="http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio"
-//					xmlns:ns33="http://servicos.saude.gov.br/wsdl/mensageria/v1/paginacao"
-//					xmlns:ns11="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/cep"
-//					xmlns:ns32="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/filtropesquisaestabelecimento.v1r0"
-//					xmlns:ns10="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/bairro"
-//					xmlns:ns17="http://servicos.saude.gov.br/schema/corporativo/pessoafisica/v1r2/nomecompleto"
-//					xmlns:ns38="http://servicos.saude.gov.br/schema/corporativo/v1r3/municipio"
-//					xmlns:ns16="http://servicos.saude.gov.br/schema/corporativo/documento/v1r2/cpf"
-//					xmlns:ns37="http://servicos.saude.gov.br/schema/corporativo/v1r2/uf"
-//					xmlns:ns15="http://servicos.saude.gov.br/schema/cnes/v1r0/diretor"
-//					xmlns:ns14="http://servicos.saude.gov.br/schema/corporativo/v1r2/pais"
-//					xmlns:ns19="http://servicos.saude.gov.br/schema/cnes/v1r0/esferaadministrativa"
-//					xmlns:ns18="http://servicos.saude.gov.br/schema/cnes/v1r0/tipounidade"
-//					xmlns:ns20="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r2/telefone"
-//					xmlns:ns24="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializados"
-//					xmlns:ns23="http://servicos.saude.gov.br/schema/cnes/v1r0/localizacao"
-//					xmlns:ns22="http://servicos.saude.gov.br/schema/corporativo/v1r2/email"
-//					xmlns:ns21="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r1/tipotelefone"
-//					xmlns:ns28="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaprecadastrocnes"
-//					xmlns:ns27="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacao"
-//					xmlns:ns26="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacoes"
-//					xmlns:ns25="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializado"
-//					xmlns:ns29="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
-//					<ns7:Nome>SECRETARIA DE ESTADO DA SAUDE</ns7:Nome>
-//				</ns29:NomeEmpresarial>
 //				<nat:NaturezaJuridica
 //					xmlns:nat="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
 //					<nat1:codigoNaturezaJuridica
@@ -1027,76 +871,6 @@ public class OrganizationCnesPreRegistrationResourceProvider
 //						</tip:descricao>
 //					</nat1:tipoNaturezaJuridica>
 //				</nat:NaturezaJuridicaMantenedora>
-//				<ns29:DataAtualizacao
-//					xmlns:ns0="http://servicos.saude.gov.br/cnes/v1r0/estabelecimentosaudeservice"
-//					xmlns:ns2="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaestabelecimentosaude"
-//					xmlns:ns4="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/cnpj"
-//					xmlns:ns3="http://servicos.saude.gov.br/schema/cnes/v1r0/codigocnes"
-//					xmlns:ns6="http://servicos.saude.gov.br/schema/cnes/v1r0/codigounidade"
-//					xmlns:ns31="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica"
-//					xmlns:ns5="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosgeraiscnes"
-//					xmlns:ns30="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica"
-//					xmlns:ns8="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r2/endereco"
-//					xmlns:ns7="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/nomejuridico"
-//					xmlns:ns35="http://servicos.saude.gov.br/schema/cnes/v1r0/listatipounidade"
-//					xmlns:ns13="http://servicos.saude.gov.br/schema/corporativo/v1r1/uf"
-//					xmlns:ns34="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/resultadopesquisaestabelecimento.v1r0"
-//					xmlns:ns9="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/tipologradouro"
-//					xmlns:ns12="http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio"
-//					xmlns:ns33="http://servicos.saude.gov.br/wsdl/mensageria/v1/paginacao"
-//					xmlns:ns11="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/cep"
-//					xmlns:ns32="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/filtropesquisaestabelecimento.v1r0"
-//					xmlns:ns10="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/bairro"
-//					xmlns:ns17="http://servicos.saude.gov.br/schema/corporativo/pessoafisica/v1r2/nomecompleto"
-//					xmlns:ns38="http://servicos.saude.gov.br/schema/corporativo/v1r3/municipio"
-//					xmlns:ns16="http://servicos.saude.gov.br/schema/corporativo/documento/v1r2/cpf"
-//					xmlns:ns37="http://servicos.saude.gov.br/schema/corporativo/v1r2/uf"
-//					xmlns:ns15="http://servicos.saude.gov.br/schema/cnes/v1r0/diretor"
-//					xmlns:ns14="http://servicos.saude.gov.br/schema/corporativo/v1r2/pais"
-//					xmlns:ns19="http://servicos.saude.gov.br/schema/cnes/v1r0/esferaadministrativa"
-//					xmlns:ns18="http://servicos.saude.gov.br/schema/cnes/v1r0/tipounidade"
-//					xmlns:ns20="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r2/telefone"
-//					xmlns:ns24="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializados"
-//					xmlns:ns23="http://servicos.saude.gov.br/schema/cnes/v1r0/localizacao"
-//					xmlns:ns22="http://servicos.saude.gov.br/schema/corporativo/v1r2/email"
-//					xmlns:ns21="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r1/tipotelefone"
-//					xmlns:ns28="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaprecadastrocnes"
-//					xmlns:ns27="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacao"
-//					xmlns:ns26="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacoes"
-//					xmlns:ns25="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializado"
-//					xmlns:ns29="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">2008-08-12
-//				</ns29:DataAtualizacao>
-//				<end:Endereco
-//					xmlns:end="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r2/endereco">
-//					<end:nomeLogradouro>IRMA BENWARDA</end:nomeLogradouro>
-//					<end:numero>297</end:numero>
-//					<end:Bairro>
-//						<bair:descricaoBairro
-//							xmlns:bair="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/bairro">CENTRO
-//						</bair:descricaoBairro>
-//					</end:Bairro>
-//					<end:CEP>
-//						<cep:numeroCEP
-//							xmlns:cep="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/cep">88015270
-//						</cep:numeroCEP>
-//					</end:CEP>
-//					<end:Municipio>
-//						<mun:codigoMunicipio
-//							xmlns:mun="http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio">420540
-//						</mun:codigoMunicipio>
-//						<mun:nomeMunicipio
-//							xmlns:mun="http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio">FLORIANOPOLIS
-//						</mun:nomeMunicipio>
-//						<mun:UF
-//							xmlns:mun="http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio">
-//							<uf:codigoUF
-//								xmlns:uf="http://servicos.saude.gov.br/schema/corporativo/v1r1/uf"/>
-//								<uf:siglaUF
-//									xmlns:uf="http://servicos.saude.gov.br/schema/corporativo/v1r1/uf">SC
-//								</uf:siglaUF>
-//							</mun:UF>
-//						</end:Municipio>
-//					</end:Endereco>
 //				</dad:DadosPreCadastroCNES>
 //			</est:responseConsultarPrecadastroCNES>
 //		</S:Body>
