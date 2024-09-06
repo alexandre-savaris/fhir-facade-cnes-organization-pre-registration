@@ -94,6 +94,8 @@ public class Utils {
 //            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns26:CodigoUnidade/ns26:codigo/text()");
         xpathExpressions.put("cnpj",
             "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/ns4:CNPJ/ns4:numeroCNPJ/text()");
+        xpathExpressions.put("maintainerCnpj",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/ns29:CNPJMantenedora/ns4:numeroCNPJ/text()");
         xpathExpressions.put("name",
             "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/ns29:NomeFantasia/ns7:Nome/text()");
         xpathExpressions.put("alias",

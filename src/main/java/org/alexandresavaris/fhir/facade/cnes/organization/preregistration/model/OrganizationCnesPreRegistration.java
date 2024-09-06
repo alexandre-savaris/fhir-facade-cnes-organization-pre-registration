@@ -20,6 +20,17 @@ public class OrganizationCnesPreRegistration extends Organization {
     @Child(name = "updateDate")
     private DateType updateDate;
 
+    // Maintainer's CNPJ.
+    @Description(
+        shortDefinition
+            = "The CNPJ number (Cadastro Nacional de Pessoas Jurídicas) of the Organization's Maintainer.")
+    @ca.uhn.fhir.model.api.annotation.Extension(
+        url = "https://alexandresavaris.org/fhir/r4/Extension/cnes/CnpjMantenedora",
+        isModifier = false,
+        definedLocally = true)
+    @Child(name = "maintainerCnpj")
+    private Coding maintainerCnpj;
+
 //    // Director's CPF.
 //    @Description(
 //        shortDefinition
@@ -86,6 +97,20 @@ public class OrganizationCnesPreRegistration extends Organization {
     public void setUpdateDate(DateType updateDate) {
         
         this.updateDate = updateDate;
+    }
+
+    public Coding getMaintainerCnpj() {
+        
+        if (this.maintainerCnpj == null) {
+            this.maintainerCnpj = new Coding();
+        }
+        
+        return this.maintainerCnpj;
+    }
+    
+    public void setMaintainerCnpj(Coding maintainerCnpj) {
+        
+        this.maintainerCnpj = maintainerCnpj;
     }
 
 //    public Coding getDirectorCpf() {
@@ -173,7 +198,8 @@ public class OrganizationCnesPreRegistration extends Organization {
     public boolean isEmpty() {
         
       return super.isEmpty() && ElementUtil.isEmpty(
-          this.updateDate
+          this.updateDate,
+          this.maintainerCnpj
 //          this.directorCpf,
 //          this.directorName,
 //          this.isSus,

@@ -360,6 +360,27 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 );
             }
 
+            // CNPJMantenedora -> Extension (Maintainer's CNPJ).
+            String maintainerCnpj
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get("maintainerCnpj"),
+                    0
+                );
+            if (maintainerCnpj != null) {
+                retVal.setMaintainerCnpj(
+                    new Coding()
+                        .setSystem(Utils.namingSystems.get("cnpj"))
+                        .setCode(maintainerCnpj)
+                        .setDisplay(
+                            new String(
+                                "Número do CNPJ da mantenedora"
+                                    .getBytes("ISO-8859-1"),
+                                "UTF-8"
+                            )
+                        )
+                );
+            }
+
 //            // numeroCPF -> Extension (Director's CPF).
 //            // NOTE: despite its availability in the original response from the
 //            // SOAP Webservice, the Director's CPF is considered personal data
@@ -810,46 +831,6 @@ public class OrganizationCnesPreRegistrationResourceProvider
 //						</tip:descricao>
 //					</nat1:tipoNaturezaJuridica>
 //				</nat:NaturezaJuridica>
-//				<ns29:CNPJMantenedora
-//					xmlns:ns0="http://servicos.saude.gov.br/cnes/v1r0/estabelecimentosaudeservice"
-//					xmlns:ns2="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaestabelecimentosaude"
-//					xmlns:ns4="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/cnpj"
-//					xmlns:ns3="http://servicos.saude.gov.br/schema/cnes/v1r0/codigocnes"
-//					xmlns:ns6="http://servicos.saude.gov.br/schema/cnes/v1r0/codigounidade"
-//					xmlns:ns31="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica"
-//					xmlns:ns5="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosgeraiscnes"
-//					xmlns:ns30="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica"
-//					xmlns:ns8="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r2/endereco"
-//					xmlns:ns7="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/nomejuridico"
-//					xmlns:ns35="http://servicos.saude.gov.br/schema/cnes/v1r0/listatipounidade"
-//					xmlns:ns13="http://servicos.saude.gov.br/schema/corporativo/v1r1/uf"
-//					xmlns:ns34="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/resultadopesquisaestabelecimento.v1r0"
-//					xmlns:ns9="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/tipologradouro"
-//					xmlns:ns12="http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio"
-//					xmlns:ns33="http://servicos.saude.gov.br/wsdl/mensageria/v1/paginacao"
-//					xmlns:ns11="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/cep"
-//					xmlns:ns32="http://servicos.saude.gov.br/wsdl/mensageria/estabelecimentosaudeservice/v2r0/filtropesquisaestabelecimento.v1r0"
-//					xmlns:ns10="http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/bairro"
-//					xmlns:ns17="http://servicos.saude.gov.br/schema/corporativo/pessoafisica/v1r2/nomecompleto"
-//					xmlns:ns38="http://servicos.saude.gov.br/schema/corporativo/v1r3/municipio"
-//					xmlns:ns16="http://servicos.saude.gov.br/schema/corporativo/documento/v1r2/cpf"
-//					xmlns:ns37="http://servicos.saude.gov.br/schema/corporativo/v1r2/uf"
-//					xmlns:ns15="http://servicos.saude.gov.br/schema/cnes/v1r0/diretor"
-//					xmlns:ns14="http://servicos.saude.gov.br/schema/corporativo/v1r2/pais"
-//					xmlns:ns19="http://servicos.saude.gov.br/schema/cnes/v1r0/esferaadministrativa"
-//					xmlns:ns18="http://servicos.saude.gov.br/schema/cnes/v1r0/tipounidade"
-//					xmlns:ns20="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r2/telefone"
-//					xmlns:ns24="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializados"
-//					xmlns:ns23="http://servicos.saude.gov.br/schema/cnes/v1r0/localizacao"
-//					xmlns:ns22="http://servicos.saude.gov.br/schema/corporativo/v1r2/email"
-//					xmlns:ns21="http://servicos.saude.gov.br/schema/corporativo/telefone/v1r1/tipotelefone"
-//					xmlns:ns28="http://servicos.saude.gov.br/wsdl/mensageria/v1r0/filtropesquisaprecadastrocnes"
-//					xmlns:ns27="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacao"
-//					xmlns:ns26="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoclassificacoes"
-//					xmlns:ns25="http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializado"
-//					xmlns:ns29="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
-//					<ns4:numeroCNPJ>82951245000169</ns4:numeroCNPJ>
-//				</ns29:CNPJMantenedora>
 //				<nat:NaturezaJuridicaMantenedora
 //					xmlns:nat="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
 //					<nat1:codigoNaturezaJuridica
