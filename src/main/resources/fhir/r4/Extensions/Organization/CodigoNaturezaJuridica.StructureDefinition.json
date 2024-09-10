@@ -1,0 +1,73 @@
+{
+  "resourceType": "StructureDefinition",
+  "id": "extension-cnes-codigo-natureza-juridica",
+  "language": "pt-BR",
+  "url": "https://alexandresavaris.org/fhir/r4/Extension/cnes/CodigoNaturezaJuridica",
+  "version": "1.0.0",
+  "name": "CodigoNaturezaJuridica",
+  "title": "Código da Natureza Jurídica no IBGE",
+  "status": "active",
+  "experimental": false,
+  "date": "2024-09-10",
+  "publisher": "Alexandre Savaris",
+  "contact": [
+    {
+      "name": "Alexandre Savaris",
+      "telecom": [
+        {
+          "system": "email",
+          "value": "alexandre.savaris@gmail.com"
+        }
+      ]
+    }
+  ],
+  "description": "Código da Natureza Jurídica mantido pelo Instituto Brasileiro de Geografia e Estatística (IBGE).",
+  "jurisdiction": [
+    {
+      "coding": [
+        {
+          "system": "urn:iso:std:iso:3166",
+          "code": "BRA",
+          "display": "Brazil",
+          "userSelected": false
+        }
+      ]
+    }
+  ],
+  "purpose": "Identificar uma Natureza Jurídica por meio de um código definido e mantido pelo IBGE.",
+  "fhirVersion": "4.0.1",
+  "kind": "complex-type",
+  "abstract": true,
+  "context": [
+    {
+      "type": "element",
+      "expression": "Organization"
+    }
+  ],
+  "type": "Extension",
+  "baseDefinition": "http://hl7.org/fhir/StructureDefinition/Extension",
+  "derivation": "constraint",
+  "differential": {
+    "element": [
+      {
+        "id": "Extension.id",
+        "path": "Extension.id",
+        "max": "0"
+      },
+      {
+        "id": "Extension.url",
+        "path": "Extension.url",
+        "fixedUri": "https://alexandresavaris.org/fhir/r4/Extension/cnes/CodigoNaturezaJuridica"
+      },
+      {
+        "id": "Extension.value[x]",
+        "path": "Extension.value[x]",
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ]
+      }
+    ]
+  }
+}

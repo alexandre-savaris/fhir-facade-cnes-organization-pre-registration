@@ -1,0 +1,44 @@
+{
+  "resourceType": "StructureDefinition",
+  "id": "namingsystem-cnes-codigo-natureza-juridica",
+  "language": "pt-BR",
+  "url": "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/CodigoNaturezaJuridica",
+  "version": "1.0.0",
+  "name": "CodigoNaturezaJuridica",
+  "title": "Código da Natureza Jurídica no IBGE",
+  "status": "active",
+  "experimental": false,
+  "date": "2024-09-10",
+  "publisher": "Alexandre Savaris",
+  "contact": [
+    {
+      "name": "Alexandre Savaris",
+      "telecom": [
+        {
+          "system": "email",
+          "value": "alexandre.savaris@gmail.com"
+        }
+      ]
+    }
+  ],
+  "description": "Código da Natureza Jurídica mantido pelo Instituto Brasileiro de Geografia e Estatística (IBGE).",
+  "jurisdiction": [
+    {
+      "coding": [
+        {
+          "system": "urn:iso:std:iso:3166",
+          "code": "BRA",
+          "display": "Brazil",
+          "userSelected": false
+        }
+      ]
+    }
+  ],
+  "purpose": "Identificar uma Natureza Jurídica por meio de um código definido e mantido pelo IBGE.",
+  "fhirVersion": "4.0.1",
+  "kind": "resource",
+  "abstract": true,
+  "type": "NamingSystem",
+  "baseDefinition": "http://hl7.org/fhir/StructureDefinition/NamingSystem",
+  "derivation": "constraint"
+}

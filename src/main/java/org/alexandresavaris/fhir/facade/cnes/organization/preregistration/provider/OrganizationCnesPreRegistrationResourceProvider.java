@@ -9,14 +9,12 @@ import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
 import ca.uhn.fhir.rest.server.interceptor.ServerInterceptorUtil;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -36,7 +34,6 @@ import org.alexandresavaris.fhir.facade.cnes.organization.preregistration.util.U
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.*;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -131,16 +128,37 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 .build()
                 .send(request, HttpResponse.BodyHandlers.ofString());
             
+            // To guarantee that namespace prefixes are unique throughout the
+            // whole document, replace known duplicate values with arbitrary
+            // ones.
+            String responseBody = response.body()
+                .replace(
+                    "tip:codigoTipoTelefone xmlns:tip",
+                    "tipTel:codigoTipoTelefone xmlns:tipTel"
+                )
+                .replace(
+                    "tip:descricaoTipoTelefone xmlns:tip",
+                    "tipTel:descricaoTipoTelefone xmlns:tipTel"
+                )
+                .replace(
+                    "tip:codigoTipoTelefone",
+                    "tipTel:codigoTipoTelefone"
+                )
+                .replace(
+                    "tip:descricaoTipoTelefone",
+                    "tipTel:descricaoTipoTelefone"
+                );
+            
             // For debugging purposes.
             // Uncomment to see the response body from the SOAP Webservice.
-//            System.out.println(
-//                "----------------------------------------------------------"
-//            );
-//            System.out.println(response.statusCode());
-//            System.out.println(response.body());
-//            System.out.println(
-//                "----------------------------------------------------------"
-//            );
+            System.out.println(
+                "----------------------------------------------------------"
+            );
+            System.out.println(response.statusCode());
+            System.out.println(responseBody);
+            System.out.println(
+                "----------------------------------------------------------"
+            );
 
             int responseStatusCode = response.statusCode();
             if (responseStatusCode != 200) {
@@ -166,7 +184,7 @@ public class OrganizationCnesPreRegistrationResourceProvider
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document
                 = builder.parse(
-                    new InputSource(new StringReader(response.body()))
+                    new InputSource(new StringReader(responseBody))
                 );
             
             // Setting namespaces for using XPath.
@@ -187,18 +205,6 @@ public class OrganizationCnesPreRegistrationResourceProvider
                     .setSystem("urn:oid:" + Utils.oids.get("cnes"))
                     .setValue(cnes);
             }
-
-//            // CodigoUnidade -> Identifier: Unity code.
-//            String unityCode =
-//                extractSingleValueFromXml(document, xpath,
-//                    Utils.xpathExpressions.get("unityCode"),
-//                    0
-//                );
-//            if (unityCode != null) {
-//                retVal.addIdentifier()
-//                    .setSystem(Utils.namingSystems.get("unityCode"))
-//                    .setValue(unityCode);
-//            }
 
             // numeroCNPJ -> Identifier: CNPJ.
             String cnpj
@@ -253,100 +259,64 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 Utils.xpathExpressions.get("state"),
                 0
             );
-            String addressTextTemplate = "{0}, {1} - {2} - {3} - {4}";
-            String addressText = java.text.MessageFormat.format(
-                addressTextTemplate, street, number, neighborhood, city, state);
-            
-            Address address = new Address()
-                .setUse(Address.AddressUse.WORK)
-                .setType(Address.AddressType.BOTH)
-                .setText(addressText)
-                .setCity(city)
-                .setState(state)
-                .setPostalCode(
-                    extractSingleValueFromXml(document, xpath,
-                        Utils.xpathExpressions.get("postalCode"),
-                        0
-                    )
-                )
-                .setCountry("BRA");
-            
-            // Extensions for IBGE codes.
+            String postalCode = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("postalCode"),
+                0
+            );
             String cityCodeIbge
                 = extractSingleValueFromXml(document, xpath,
                     Utils.xpathExpressions.get("cityCodeIbge"),
                     0
                 );
-            if (cityCodeIbge != null) {
-                Extension cityCodeIbgeExtension
-                    = new Extension(Utils.extensions.get("cityCodeIbge"));
-                cityCodeIbgeExtension.setValue(
-                    new Coding()
-                        .setSystem("urn:oid:" + Utils.oids.get("ibgeCode"))
-                        .setCode(cityCodeIbge)
-                        .setDisplay(
-                            new String(
-                                "Código do município no IBGE"
-                                    .getBytes("ISO-8859-1"),
-                                "UTF-8"
-                            )
-                        )
+            if (street != null || number != null || neighborhood != null
+                    || city != null || state != null || postalCode != null
+                    || cityCodeIbge != null) {
+
+                String addressTextTemplate = "{0}, {1} - {2} - {3} - {4}";
+                String addressText = java.text.MessageFormat.format(
+                    addressTextTemplate,
+                    (street != null ? street : "<SEM LOGRADOURO>"),
+                    (number != null
+                        ? number
+                        : new String(
+                            "<SEM NÙMERO>".getBytes("ISO-8859-1"), "UTF-8")
+                        ),
+                    (neighborhood != null ? neighborhood : "<SEM BAIRRO>"),
+                    (city != null ? city : "<SEM CIDADE>"),
+                    (state != null ? state : "<SEM UF>")
                 );
-                address.addExtension(cityCodeIbgeExtension);
+                
+                Address address = new Address()
+                    .setUse(Address.AddressUse.WORK)
+                    .setType(Address.AddressType.BOTH)
+                    .setText(addressText)
+                    .setCity(city)
+                    .setState(state)
+                    .setPostalCode(postalCode)
+                    .setCountry("BRA");
+
+                // Extensions for IBGE codes.
+                if (cityCodeIbge != null) {
+                    Extension cityCodeIbgeExtension
+                        = new Extension(Utils.extensions.get("cityCodeIbge"));
+                    cityCodeIbgeExtension.setValue(
+                        new Coding()
+                            .setSystem("urn:oid:" + Utils.oids.get("ibgeCode"))
+                            .setCode(cityCodeIbge)
+                            .setDisplay(
+                                new String(
+                                    "Código do município no IBGE"
+                                        .getBytes("ISO-8859-1"),
+                                    "UTF-8"
+                                )
+                            )
+                    );
+                    address.addExtension(cityCodeIbgeExtension);
+                }
+
+                retVal.addAddress(address);
+                
             }
-//            String stateCodeIbge
-//                = extractSingleValueFromXml(document, xpath,
-//                    Utils.xpathExpressions.get("stateCodeIbge"),
-//                    0
-//                );
-//            if (stateCodeIbge != null) {
-//                Extension stateCodeIbgeExtension
-//                    = new Extension(Utils.extensions.get("stateCodeIbge"));
-//                stateCodeIbgeExtension.setValue(
-//                    new Coding()
-//                        .setSystem("urn:oid:" + Utils.oids.get("ibgeCode"))
-//                        .setCode(stateCodeIbge)
-//                        .setDisplay(
-//                            new String(
-//                                "Código da UF no IBGE".getBytes("ISO-8859-1"),
-//                                "UTF-8"
-//                            )
-//                        )
-//                );
-//                address.addExtension(stateCodeIbgeExtension);
-//            }
-            
-//            // Geolocation extensions.
-//            String latitude
-//                = extractSingleValueFromXml(document, xpath,
-//                    Utils.xpathExpressions.get("latitude"),
-//                    0
-//                );
-//            String longitude
-//                = extractSingleValueFromXml(document, xpath,
-//                    Utils.xpathExpressions.get("longitude"),
-//                    0
-//                );
-//            if (latitude != null && longitude != null) {
-//                Extension geolocationExtension
-//                    = new Extension(Utils.extensions.get("geolocation"));
-//                Extension latitudeExtension
-//                    = new Extension(Utils.extensions.get("latitude"));
-//                latitudeExtension.setValue(
-//                    new DecimalType(latitude)
-//                );
-//                Extension longitudeExtension
-//                    = new Extension(Utils.extensions.get("longitude"));
-//                longitudeExtension.setValue(
-//                    new DecimalType(longitude)
-//                );
-//                geolocationExtension.addExtension(latitudeExtension);
-//                geolocationExtension.addExtension(longitudeExtension);
-//                // Completing the address to be returned.
-//                address.addExtension(geolocationExtension);
-//            }
-            
-            retVal.addAddress(address);
             
             // dataAtualizacao -> Extension (update date).
             String updateDate
@@ -360,6 +330,62 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 );
             }
 
+            // tipoNaturezaJuridica -> Extension (Legal Nature Category).
+            String legalNatureCategory
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get("legalNatureCategory"),
+                    0
+                );
+            String legalNatureCategoryDisplay
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get("legalNatureCategoryDisplay"),
+                    0
+                );
+            if (legalNatureCategory != null
+                || legalNatureCategoryDisplay != null) {
+                retVal.setLegalNatureCategory(
+                    new Coding()
+                        .setSystem(
+                            Utils.namingSystems.get("categoriaNaturezaJuridica")
+                        )
+                        .setCode(legalNatureCategory)
+                        .setDisplay(legalNatureCategoryDisplay)
+                );
+            }
+
+            // codigoNaturezaJuridicaConcla -> Extension (Legal Nature Code).
+            String legalNatureCode
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get("legalNatureCode"),
+                    0
+                );
+            String legalNatureCodeDisplay
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get("legalNatureCodeDisplay"),
+                    0
+                );
+            if (legalNatureCode != null
+                || legalNatureCodeDisplay != null) {
+                
+                // The correct format for the Legal Nature Code, according to
+                // the Brazilian Institute of Geography and Statistics (IBGE).
+                String formattedLegalNatureCode
+                    = (legalNatureCode != null
+                        ? legalNatureCode.substring(0, 3)
+                            + "-"
+                            + legalNatureCode.substring(3)
+                        : legalNatureCode);
+                
+                retVal.setLegalNatureCode(
+                    new Coding()
+                        .setSystem(
+                            Utils.namingSystems.get("codigoNaturezaJuridica")
+                        )
+                        .setCode(formattedLegalNatureCode)
+                        .setDisplay(legalNatureCodeDisplay)
+                );
+            }
+            
             // CNPJMantenedora -> Extension (Maintainer's CNPJ).
             String maintainerCnpj
                 = extractSingleValueFromXml(document, xpath,
@@ -381,170 +407,83 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 );
             }
 
-//            // numeroCPF -> Extension (Director's CPF).
-//            // NOTE: despite its availability in the original response from the
-//            // SOAP Webservice, the Director's CPF is considered personal data
-//            // and is replaced by a fake one.
-//            retVal.setDirectorCpf(
-//                new Coding()
-//                    .setSystem("urn:oid:" + Utils.oids.get("cpf"))
-//                    .setCode("42424242424")
-//                    .setDisplay(
-//                        new String(
-//                            "Número do CPF do Diretor".getBytes("ISO-8859-1"),
-//                            "UTF-8"
-//                        )
-//                    )
-//            );
-
-//            // Nome -> Extension (Director's name).
-//            // NOTE: despite its availability in the original response from the
-//            // SOAP Webservice, the Director's name is considered personal data
-//            // and is replaced by a fake one.
-//            retVal.setDirectorName(
-//                new HumanName().setText("Marvin the Paranoid Android")
-//            );
-
-//            // tipoUnidade -> type.
-//            String unityType
-//                = extractSingleValueFromXml(document, xpath,
-//                    Utils.xpathExpressions.get("unityType"),
-//                    0
-//                );
-//            if (unityType != null) {
-//                retVal.addType(
-//                    new CodeableConcept(
-//                        new Coding()
-//                            .setSystem(Utils.valueSets.get("type"))
-//                            .setCode(unityType)
-//                            .setDisplay(
-//                                extractSingleValueFromXml(document, xpath,
-//                                    Utils.xpathExpressions.get(
-//                                        "unityDescription"
-//                                    ),
-//                                    0
-//                                )
-//                            )
-//                    )
-//                );
-//            }
-                
-//            // Telefone -> contact
-//            String phoneNumber
-//                = extractSingleValueFromXml(document, xpath,
-//                    Utils.xpathExpressions.get("phoneNumber"),
-//                    0
-//                );
-//            if (phoneNumber != null) {
-//                String phoneTemplate = "{0} {1}";
-//                String phone = java.text.MessageFormat.format(
-//                    phoneTemplate,
-//                    extractSingleValueFromXml(document, xpath,
-//                        Utils.xpathExpressions.get("phoneAreaCode"),
-//                        0
-//                    ),
-//                    phoneNumber
-//                );
-//                retVal.addContact()
-//                    .addTelecom(
-//                        new ContactPoint()
-//                            .setSystem(ContactPoint.ContactPointSystem.PHONE)
-//                            .setValue(phone)
-//                            .setUse(ContactPoint.ContactPointUse.WORK)
-//                    )
-//                    .setPurpose(
-//                        new CodeableConcept(
-//                            new Coding()
-//                                .setSystem(Utils.namingSystems.get("phoneType"))
-//                                .setCode(
-//                                    extractSingleValueFromXml(document, xpath,
-//                                        Utils.xpathExpressions.get("phoneType"),
-//                                        0
-//                                    )
-//                                )
-//                                .setDisplay(
-//                                    extractSingleValueFromXml(document, xpath,
-//                                        Utils.xpathExpressions.get(
-//                                            "phoneDescription"
-//                                        ),
-//                                        0
-//                                    )
-//                                )
-//                        )
-//                    );
-//            }
-
-//            // Email -> contact
-//            String email
-//                = extractSingleValueFromXml(document, xpath,
-//                    Utils.xpathExpressions.get("email"),
-//                    0
-//                );
-//            if (email != null) {
-//                retVal.addContact()
-//                    .addTelecom(
-//                        new ContactPoint()
-//                            .setSystem(ContactPoint.ContactPointSystem.EMAIL)
-//                            .setValue(email)
-//                            .setUse(ContactPoint.ContactPointUse.WORK)
-//                    )
-//                    .setPurpose(
-//                        new CodeableConcept(
-//                            new Coding()
-//                                .setSystem(Utils.namingSystems.get("emailType"))
-//                                .setCode(
-//                                    extractSingleValueFromXml(document, xpath,
-//                                        Utils.xpathExpressions.get("emailType"),
-//                                        0
-//                                    )
-//                                )
-//                        )
-//                    );
-//            }
+            // Phones -> contact
+            int phoneCount = countNodesFromXml(document, xpath,
+                Utils.xpathExpressions.get("phones"));
+            for (int i = 0; i < phoneCount; i++) {
+                String phoneNumber
+                    = extractSingleValueFromXml(document, xpath,
+                        Utils.xpathExpressions.get("phoneNumber"),
+                        i
+                    );
+                if (phoneNumber != null) {
+                    String phoneTemplate = "{0} {1}";
+                    String phone = java.text.MessageFormat.format(
+                        phoneTemplate,
+                        extractSingleValueFromXml(document, xpath,
+                            Utils.xpathExpressions.get("phoneAreaCode"),
+                            i
+                        ),
+                        phoneNumber
+                    );
+                    retVal.addContact()
+                        .addTelecom(
+                            new ContactPoint()
+                                .setSystem(ContactPoint.ContactPointSystem.PHONE)
+                                .setValue(phone)
+                                .setUse(ContactPoint.ContactPointUse.WORK)
+                        )
+                        .setPurpose(
+                            new CodeableConcept(
+                                new Coding()
+                                    .setSystem(Utils.namingSystems.get("phoneType"))
+                                    .setCode(
+                                        extractSingleValueFromXml(document, xpath,
+                                            Utils.xpathExpressions.get("phoneType"),
+                                            i
+                                        )
+                                    )
+                                    .setDisplay(
+                                        extractSingleValueFromXml(document, xpath,
+                                            Utils.xpathExpressions.get(
+                                                "phoneDescription"
+                                            ),
+                                            i
+                                        )
+                                    )
+                            )
+                        );
+                }
+            }
             
-//            // perteceSistemaSUS -> Extension (Is the Organization part of SUS?).
-//            String isSus
-//                = extractSingleValueFromXml(document, xpath,
-//                    Utils.xpathExpressions.get("isSus"),
-//                    0
-//                );
-//            if (isSus != null) {
-//                retVal.setIsSus(
-//                    new BooleanType(isSus)
-//                );
-//            }
-
-//            // fluxoClientela -> Extension (The client flow expected for the
-//            // Organization).
-//            String clientFlow
-//                = extractSingleValueFromXml(document, xpath,
-//                    Utils.xpathExpressions.get("clientFlow"),
-//                    0
-//                );
-//            if (clientFlow != null) {
-//                retVal.setClientFlow(
-//                    new CodeType(clientFlow)
-//                        .setSystem(Utils.namingSystems.get("clientFlow"))
-//                );
-//            }
+            // Email -> contact
+            String email
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get("email"),
+                    0
+                );
+            if (email != null) {
+                retVal.addContact()
+                    .addTelecom(
+                        new ContactPoint()
+                            .setSystem(ContactPoint.ContactPointSystem.EMAIL)
+                            .setValue(email)
+                            .setUse(ContactPoint.ContactPointUse.WORK)
+                    )
+                    .setPurpose(
+                        new CodeableConcept(
+                            new Coding()
+                                .setSystem(Utils.namingSystems.get("emailType"))
+                                .setCode(
+                                    extractSingleValueFromXml(document, xpath,
+                                        Utils.xpathExpressions.get("emailType"),
+                                        0
+                                    )
+                                )
+                        )
+                    );
+            }
             
-//            // servicoespecializados -> Extension (specializedServices).
-//            XPathExpression expr
-//                = xpath.compile(Utils.xpathExpressions.get("specializedService"));
-//            Object result = expr.evaluate(document, XPathConstants.NODESET);
-//            NodeList nodeList = (NodeList) result;
-            
-            // For debugging purposes.
-            // Uncomment to see the nodes extracted from the XML received from the
-            // SOAP Webservice.
-//            printNode(nodeList, 0, "");
-            
-//            List<OrganizationCnesPreRegistration.SpecializedService> specializedServices
-//                = new ArrayList<>();
-//            fillInResourceInstanceWithSpecializedServices(nodeList, "",
-//                specializedServices);
-//            retVal.setSpecializedServices(specializedServices);
-
         } catch (URISyntaxException
                     | IOException
                     | InterruptedException
@@ -583,195 +522,17 @@ public class OrganizationCnesPreRegistrationResourceProvider
         return nodes.item(index).getNodeValue();
     }
     
-//    // Loop through the XML content and fill in the resource instance with
-//    // Specialized Services.
-//    private void fillInResourceInstanceWithSpecializedServices(
-//        NodeList nodeList,
-//        String path,
-//        List<OrganizationCnesPreRegistration.SpecializedService> specializedServices)
-//        throws UnsupportedEncodingException {
-//
-//        // Nothing to do here.
-//        if (nodeList == null || nodeList.getLength() == 0) {
-//            return;
-//        }
-//        
-//        for (int i = 0; i < nodeList.getLength(); i++) {
-//            Node node = nodeList.item(i);
-//            path = path + "/" + node.getNodeName();
-//            if (node.getNodeType() == Node.TEXT_NODE) {
-//                if (
-//                    path.endsWith(
-//                        Utils.xpathExpressionSuffixes.get(
-//                            "specializedServiceCode"
-//                        )
-//                    )
-//                ) {
-//                    // Specialized service.
-//                    // For the system and code values, create a new extension
-//                    // instance.
-//                    specializedServices.add(new OrganizationCnesPreRegistration.SpecializedService()
-//                            .setSpecializedService(
-//                                new Coding()
-//                                    .setSystem(
-//                                        Utils.namingSystems.get(
-//                                            "specializedServiceType"
-//                                        )
-//                                    )
-//                                    .setCode(node.getNodeValue())
-//                            )
-//                    );
-//                } else if (
-//                    path.endsWith(
-//                        Utils.xpathExpressionSuffixes.get(
-//                            "specializedServiceDescription"
-//                        )
-//                    )
-//                ) {
-//                    // Specialized service.
-//                    // For the display, use the last created extension instance
-//                    // of Specialized Service.
-//                    OrganizationCnesPreRegistration.SpecializedService specializedService
-//                        = getLastSpecializedService(specializedServices);
-//                    specializedService.getSpecializedService()
-//                        .setDisplay(node.getNodeValue());
-//                } else if (
-//                    path.endsWith(
-//                        Utils.xpathExpressionSuffixes.get(
-//                            "specializedServiceClassificationCode"
-//                        )
-//                    )
-//                ) {
-//                    // Specialized service classification.
-//                    // For the system and code values, retrieve the last created
-//                    // extension instance of the Specialized service.
-//                    // Retrieve the list of Classifications, adding a new one
-//                    // afterward.
-//                    List<OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification>
-//                        specializedServiceClassifications
-//                        = getListOfSpecializedServiceClassifications(
-//                            specializedServices);
-//                    specializedServiceClassifications.add(new OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification()
-//                            .setSpecializedServiceClassification(
-//                                new Coding()
-//                                    .setSystem(
-//                                        Utils.namingSystems.get(
-//                                            "specializedServiceClassification"
-//                                        )
-//                                    )
-//                                    .setCode(node.getNodeValue())
-//                            )
-//                    );
-//                } else if (
-//                    path.endsWith(
-//                        Utils.xpathExpressionSuffixes.get(
-//                            "specializedServiceClassificationDescription"
-//                        )
-//                    )
-//                ) {
-//                    // Specialized service classification.
-//                    // For the display value, retrieve the last created
-//                    // extension instance of the Specialized service
-//                    // classification.
-//                    OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
-//                        specializedServiceClassification
-//                            = getLastSpecializedServiceClassification(
-//                                specializedServices
-//                            );
-//                    specializedServiceClassification.getSpecializedServiceClassification()
-//                        .setDisplay(node.getNodeValue());
-//                } else if (
-//                    path.endsWith(
-//                        Utils.xpathExpressionSuffixes.get(
-//                            "specializedServiceClassificationCharacteristicCode"
-//                        )
-//                    )
-//                ) {
-//                    // Specialized service classification characteristic.
-//                    // For the characteristic code, retrieve the last created
-//                    // extension instance of the Specialized service
-//                    // classification.
-//                    OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
-//                        specializedServiceClassification
-//                            = getLastSpecializedServiceClassification(
-//                                specializedServices
-//                            );
-//                    specializedServiceClassification.getSpecializedServiceClassificationCharacteristic()
-//                        .setSystem(
-//                            Utils.namingSystems.get(
-//                                "specializedServiceClassificationCharacteristic"
-//                            )
-//                        )
-//                        .setValue(node.getNodeValue());
-//                } else if (
-//                    path.endsWith(
-//                        Utils.xpathExpressionSuffixes.get(
-//                            "specializedServiceClassificationCharacteristicCnes"
-//                        )
-//                    )
-//                ) {
-//                    // Specialized service classification characteristic.
-//                    // For the CNES code, retrieve the last created
-//                    // extension instance of the Specialized service
-//                    // classification.
-//                    OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
-//                        specializedServiceClassification
-//                            = getLastSpecializedServiceClassification(
-//                                specializedServices
-//                            );
-//                    specializedServiceClassification.getSpecializedServiceClassificationCnes()
-//                        .setSystem("urn:oid:" + Utils.oids.get("cnes"))
-//                        .setCode(node.getNodeValue())
-//                        .setDisplay(
-//                            new String(
-//                                "Número no CNES".getBytes("ISO-8859-1"),
-//                                "UTF-8"
-//                            )
-//                        );
-//                }
-//            }
-//            fillInResourceInstanceWithSpecializedServices(
-//                node.getChildNodes(),
-//                path,
-//                specializedServices);
-//        }
-//    }
-    
-//    // Get the last Specialized Service from the list.
-//    private OrganizationCnesPreRegistration.SpecializedService getLastSpecializedService
-//        (List<OrganizationCnesPreRegistration.SpecializedService> specializedServices) {
-//            
-//        return specializedServices.get(specializedServices.size() - 1);
-//    }
-        
-//    // Get the list of Specialized Service Classifications from the last
-//    // Specialized Service.
-//    private List<OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification>
-//        getListOfSpecializedServiceClassifications(
-//            List<OrganizationCnesPreRegistration.SpecializedService> specializedServices) {
-//            
-//        OrganizationCnesPreRegistration.SpecializedService specializedService
-//            = getLastSpecializedService(specializedServices);
-//            
-//        return specializedService.getSpecializedServiceClassifications();
-//    }
+    // Count the number of nodes returned by an XPath expression.
+    private int countNodesFromXml(Document document, XPath xpath,
+        String xpathExpression) throws XPathExpressionException {
 
-//    // Get the last Specialized Service Classification from the list.
-//    private OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification
-//        getLastSpecializedServiceClassification(
-//            List<OrganizationCnesPreRegistration.SpecializedService> specializedServices) {
-//            
-//        List<OrganizationCnesPreRegistration.SpecializedService.SpecializedServiceClassification>
-//            specializedServiceClassifications
-//                = getListOfSpecializedServiceClassifications(
-//                    specializedServices
-//                );
-//            
-//        return specializedServiceClassifications.get(
-//            specializedServiceClassifications.size() - 1
-//        );
-//    }
+        XPathExpression expr = xpath.compile(xpathExpression);
+        Object result = expr.evaluate(document, XPathConstants.NODESET);
+        NodeList nodes = (NodeList) result;
         
+        return nodes.getLength();
+    }
+    
     // For debugging purposes.
     // Uncomment to see the nodes extracted from the XML received from the
     // SOAP Webservice.
@@ -791,68 +552,3 @@ public class OrganizationCnesPreRegistrationResourceProvider
 //        }
 //    }
 }
-
-
-//<soap:Envelope
-//	xmlns:env="http://www.w3.org/2003/05/soap-envelope"
-//	xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
-//	<S:Header
-//		xmlns:S="http://www.w3.org/2003/05/soap-envelope">
-//		<WorkContext
-//			xmlns="http://oracle.com/weblogic/soap/workarea/"
-//			xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
-//			xmlns:S="http://www.w3.org/2003/05/soap-envelope">rO0ABXdrACh3ZWJsb2dpYy5hcHAuY25lcy1lYXItMS4xMS4wLmNsYXNzbG9hZGVyAAAA1gAAACN3ZWJsb2dpYy53b3JrYXJlYS5TdHJpbmdXb3JrQ29udGV4dAASMS4xMS4wLmNsYXNzbG9hZGVyAAA=
-//		</WorkContext>
-//	</S:Header>
-//	<S:Body
-//		xmlns:S="http://www.w3.org/2003/05/soap-envelope">
-//		<est:responseConsultarPrecadastroCNES
-//			xmlns:est="http://servicos.saude.gov.br/cnes/v1r0/estabelecimentosaudeservice">
-//			<dad:DadosPreCadastroCNES
-//				xmlns:dad="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
-//				<nat:NaturezaJuridica
-//					xmlns:nat="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
-//					<nat1:codigoNaturezaJuridica
-//						xmlns:nat1="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica">02
-//					</nat1:codigoNaturezaJuridica>
-//					<nat1:descricaoNaturezaJuridica
-//						xmlns:nat1="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica">ORGAO PUBLICO DO PODER EXECUTIVO ESTADUAL OU DO DISTRITO FEDERAL
-//					</nat1:descricaoNaturezaJuridica>
-//					<nat1:codigoNaturezaJuridicaConcla
-//						xmlns:nat1="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica">1023
-//					</nat1:codigoNaturezaJuridicaConcla>
-//					<nat1:tipoNaturezaJuridica
-//						xmlns:nat1="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica">
-//						<tip:codigo
-//							xmlns:tip="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica">1
-//						</tip:codigo>
-//						<tip:descricao
-//							xmlns:tip="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica">ADMINISTRACAO PUBLICA
-//						</tip:descricao>
-//					</nat1:tipoNaturezaJuridica>
-//				</nat:NaturezaJuridica>
-//				<nat:NaturezaJuridicaMantenedora
-//					xmlns:nat="http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes">
-//					<nat1:codigoNaturezaJuridica
-//						xmlns:nat1="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica">02
-//					</nat1:codigoNaturezaJuridica>
-//					<nat1:descricaoNaturezaJuridica
-//						xmlns:nat1="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica">ORGAO PUBLICO DO PODER EXECUTIVO ESTADUAL OU DO DISTRITO FEDERAL
-//					</nat1:descricaoNaturezaJuridica>
-//					<nat1:codigoNaturezaJuridicaConcla
-//						xmlns:nat1="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica">1023
-//					</nat1:codigoNaturezaJuridicaConcla>
-//					<nat1:tipoNaturezaJuridica
-//						xmlns:nat1="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica">
-//						<tip:codigo
-//							xmlns:tip="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica">1
-//						</tip:codigo>
-//						<tip:descricao
-//							xmlns:tip="http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica">ADMINISTRACAO PUBLICA
-//						</tip:descricao>
-//					</nat1:tipoNaturezaJuridica>
-//				</nat:NaturezaJuridicaMantenedora>
-//				</dad:DadosPreCadastroCNES>
-//			</est:responseConsultarPrecadastroCNES>
-//		</S:Body>
-//	</soap:Envelope>

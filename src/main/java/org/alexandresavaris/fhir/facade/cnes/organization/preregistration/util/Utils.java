@@ -32,6 +32,8 @@ public class Utils {
             "http://servicos.saude.gov.br/cnes/v1r0/estabelecimentosaudeservice");
         xmlNamespaces.put("dad",
             "http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes");
+        xmlNamespaces.put("email",
+            "http://servicos.saude.gov.br/schema/corporativo/v1r2/email");
         xmlNamespaces.put("end",
             "http://servicos.saude.gov.br/schema/corporativo/endereco/v1r2/endereco");
         xmlNamespaces.put("bair",
@@ -40,58 +42,32 @@ public class Utils {
             "http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/cep");
         xmlNamespaces.put("mun",
             "http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio");
+        xmlNamespaces.put("nat",
+            "http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes");
+        xmlNamespaces.put("nat1",
+            "http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/naturezajuridica");
+        xmlNamespaces.put("tip",
+            "http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/tiponaturezajuridica");
+        xmlNamespaces.put("tipTel",
+            "http://servicos.saude.gov.br/schema/corporativo/telefone/v1r1/tipotelefone");
+        xmlNamespaces.put("tel",
+            "http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes");
+        xmlNamespaces.put("tel1",
+            "http://servicos.saude.gov.br/schema/corporativo/telefone/v1r2/telefone");
         xmlNamespaces.put("uf",
             "http://servicos.saude.gov.br/schema/corporativo/v1r1/uf");
         xmlNamespaces.put("ns3",
             "http://servicos.saude.gov.br/schema/cnes/v1r0/codigocnes");
         xmlNamespaces.put("ns4",
             "http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/cnpj");
-//        xmlNamespaces.put("ns2",
-//            "http://servicos.saude.gov.br/schema/cnes/v1r0/codigocnes");
-//        xmlNamespaces.put("ns5",
-//            "http://servicos.saude.gov.br/schema/corporativo/documento/v1r2/cpf");
-//        xmlNamespaces.put("ns6",
-//            "http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/cnpj");
         xmlNamespaces.put("ns7",
             "http://servicos.saude.gov.br/schema/corporativo/pessoajuridica/v1r0/nomejuridico");
-//        xmlNamespaces.put("ns11",
-//            "http://servicos.saude.gov.br/schema/corporativo/endereco/v1r2/endereco");
-//        xmlNamespaces.put("ns13",
-//            "http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/bairro");
-//        xmlNamespaces.put("ns14",
-//            "http://servicos.saude.gov.br/schema/corporativo/endereco/v1r1/cep");
-//        xmlNamespaces.put("ns15",
-//            "http://servicos.saude.gov.br/schema/corporativo/v1r2/municipio");
-//        xmlNamespaces.put("ns16",
-//            "http://servicos.saude.gov.br/schema/corporativo/v1r1/uf");
-//        xmlNamespaces.put("ns18",
-//            "http://servicos.saude.gov.br/schema/corporativo/telefone/v1r2/telefone");
-//        xmlNamespaces.put("ns19",
-//            "http://servicos.saude.gov.br/schema/corporativo/telefone/v1r1/tipotelefone");
-//        xmlNamespaces.put("ns20",
-//            "http://servicos.saude.gov.br/schema/corporativo/v1r2/email");
-//        xmlNamespaces.put("ns23",
-//            "http://servicos.saude.gov.br/schema/cnes/v1r0/localizacao");
-//        xmlNamespaces.put("ns26",
-//            "http://servicos.saude.gov.br/schema/cnes/v1r0/codigounidade");
-//        xmlNamespaces.put("ns27",
-//            "http://servicos.saude.gov.br/schema/cnes/v1r0/dadosgeraiscnes");
-//        xmlNamespaces.put("ns28",
-//            "http://servicos.saude.gov.br/schema/cnes/v1r0/diretor");
         xmlNamespaces.put("ns29",
             "http://servicos.saude.gov.br/schema/cnes/v1r0/dadosprecadastrocnes");
-//        xmlNamespaces.put("ns30",
-//            "http://servicos.saude.gov.br/schema/cnes/v1r0/tipounidade");
-//        xmlNamespaces.put("ns32",
-//            "http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializado");
-//        xmlNamespaces.put("ns35",
-//            "http://servicos.saude.gov.br/schema/cnes/v1r0/servicoespecializados");
 
         // Insert XPath expressions.
         xpathExpressions.put("cnes",
             "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/ns3:CodigoCNES/ns3:codigo/text()");
-//        xpathExpressions.put("unityCode",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns26:CodigoUnidade/ns26:codigo/text()");
         xpathExpressions.put("cnpj",
             "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/ns4:CNPJ/ns4:numeroCNPJ/text()");
         xpathExpressions.put("maintainerCnpj",
@@ -114,100 +90,52 @@ public class Utils {
             "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/end:Endereco/end:CEP/cep:numeroCEP/text()");
         xpathExpressions.put("cityCodeIbge",
             "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/end:Endereco/end:Municipio/mun:codigoMunicipio/text()");
-//        xpathExpressions.put("stateCodeIbge",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns11:Endereco/ns11:Municipio/ns15:UF/ns16:codigoUF/text()");
         xpathExpressions.put("updateDate",
             "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/ns29:DataAtualizacao/text()");
-//        xpathExpressions.put("directorCpf",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns28:Diretor/ns28:CPF/ns5:numeroCPF/text()");
-//        xpathExpressions.put("directorName",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns28:Diretor/ns28:nome/ns29:Nome/text()");
-//        xpathExpressions.put("unityType",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns30:tipoUnidade/ns30:codigo/text()");
-//        xpathExpressions.put("unityDescription",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns30:tipoUnidade/ns30:descricao/text()");
-//        xpathExpressions.put("phoneAreaCode",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:Telefone/ns18:DDD/text()");
-//        xpathExpressions.put("phoneNumber",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:Telefone/ns18:numeroTelefone/text()");
-//        xpathExpressions.put("phoneType",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:Telefone/ns18:TipoTelefone/ns19:codigoTipoTelefone/text()");
-//        xpathExpressions.put("phoneDescription",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:Telefone/ns18:TipoTelefone/ns19:descricaoTipoTelefone/text()");
-//        xpathExpressions.put("email",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:Email/ns20:descricaoEmail/text()");
-//        xpathExpressions.put("emailType",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:Email/ns20:tipoEmail/text()");
-//        xpathExpressions.put("latitude",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:Localizacao/ns23:latitude/text()");
-//        xpathExpressions.put("longitude",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:Localizacao/ns23:longitude/text()");
-//        xpathExpressions.put("isSus",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:perteceSistemaSUS/text()");
-//        xpathExpressions.put("clientFlow",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:fluxoClientela/text()");
-//        xpathExpressions.put("specializedService",
-//            "//soap:Envelope/S:Body/est:responseConsultarEstabelecimentoSaude/dad:DadosGeraisEstabelecimentoSaude/ns27:servicoespecializados/ns35:servicoespecializado");
-        
-//        // Insert XPath expression suffixes.
-//        xpathExpressionSuffixes.put("specializedServiceCode",
-//            "ns32:codigo/#text");
-//        xpathExpressionSuffixes.put("specializedServiceDescription",
-//            "ns32:descricao/#text");
-//        xpathExpressionSuffixes.put("specializedServiceClassificationCode",
-//            "ns33:codigo/#text");
-//        xpathExpressionSuffixes.put("specializedServiceClassificationDescription",
-//            "ns33:descricao/#text");
-//        xpathExpressionSuffixes.put(
-//            "specializedServiceClassificationCharacteristicCode",
-//            "ns33:codigoCaracteristica/#text"
-//        );
-//        xpathExpressionSuffixes.put(
-//            "specializedServiceClassificationCharacteristicCnes",
-//            "ns33:cnes/#text"
-//        );
+        xpathExpressions.put("legalNatureCategory",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/nat:NaturezaJuridica/nat1:tipoNaturezaJuridica/tip:codigo/text()");
+        xpathExpressions.put("legalNatureCategoryDisplay",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/nat:NaturezaJuridica/nat1:tipoNaturezaJuridica/tip:descricao/text()");
+        xpathExpressions.put("legalNatureCode",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/nat:NaturezaJuridica/nat1:codigoNaturezaJuridicaConcla/text()");
+        xpathExpressions.put("legalNatureCodeDisplay",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/nat:NaturezaJuridica/nat1:descricaoNaturezaJuridica/text()");
+        xpathExpressions.put("email",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/email:Email/email:descricaoEmail/text()");
+        xpathExpressions.put("emailType",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/email:Email/email:tipoEmail/text()");
+        xpathExpressions.put("phones",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/tel:Telefones");
+        xpathExpressions.put("phoneNumber",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/tel:Telefones/tel1:numeroTelefone/text()");
+        xpathExpressions.put("phoneAreaCode",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/tel:Telefones/tel1:DDD/text()");
+        xpathExpressions.put("phoneType",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/tel:Telefones/tel1:TipoTelefone/tipTel:codigoTipoTelefone/text()");
+        xpathExpressions.put("phoneDescription",
+            "//soap:Envelope/S:Body/est:responseConsultarPrecadastroCNES/dad:DadosPreCadastroCNES/tel:Telefones/tel1:TipoTelefone/tipTel:descricaoTipoTelefone/text()");
         
         // Insert NamingSystems.
-//        namingSystems.put("unityCode",
-//            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/CodigoUnidade");
         namingSystems.put("cnpj",
             "http://rnds.saude.gov.br/fhir/r4/NamingSystem/cnpj");
-//        namingSystems.put("phoneType",
-//            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/TipoTelefone");
-//        namingSystems.put("emailType",
-//            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/TipoEmail");
-//        namingSystems.put("clientFlow",
-//            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/FluxoClientela");
-//        namingSystems.put("specializedServiceType",
-//            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/TipoServicoEspecializado");
-//        namingSystems.put("specializedServiceClassification",
-//            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/ClassificacaoServicoEspecializado");
-//        namingSystems.put("specializedServiceClassificationCharacteristic",
-//            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/CaracteristicaClassificacaoServicoEspecializado");
-
-//        // Insert ValueSets.
-//        valueSets.put("type",
-//            "https://rnds-fhir.saude.gov.br/ValueSet/BRTipoEstabelecimentoSaude-1.0");
+        namingSystems.put("categoriaNaturezaJuridica",
+            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/CategoriaNaturezaJuridica");
+        namingSystems.put("codigoNaturezaJuridica",
+            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/CodigoNaturezaJuridica");
+        namingSystems.put("phoneType",
+            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/TipoTelefone");
+        namingSystems.put("emailType",
+            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/TipoEmail");
 
         // Insert OIDs.
         // https://www.hl7.org/oid/index.cfm
         oids.put("cnes", "2.16.840.1.113883.13.36");
         oids.put("ibgeCode", "2.16.840.1.113883.4.707");
-//        oids.put("cpf", "2.16.840.1.113883.13.237");
         
         // Insert Extensions.
-//        extensions.put(
-//            "geolocation", "http://hl7.org/fhir/StructureDefinition/geolocation"
-//        );
-//        extensions.put("latitude", "latitude");
-//        extensions.put("longitude", "longitude");
         extensions.put(
             "cityCodeIbge",
             "https://alexandresavaris.org/fhir/r4/Extension/cnes/CodigoMunicipioIbge"
         );
-//        extensions.put(
-//            "stateCodeIbge",
-//            "https://alexandresavaris.org/fhir/r4/Extension/cnes/CodigoUfIbge"
-//        );
     }
 }
