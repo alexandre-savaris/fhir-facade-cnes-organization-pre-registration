@@ -407,6 +407,68 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 );
             }
 
+            // tipoNaturezaJuridicaMantenedora
+            //     -> Extension (Maintainer's Legal Nature Category).
+            String maintainerLegalNatureCategory
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get("maintainerLegalNatureCategory"),
+                    0
+                );
+            String maintainerLegalNatureCategoryDisplay
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get(
+                        "maintainerLegalNatureCategoryDisplay"
+                    ),
+                    0
+                );
+            if (maintainerLegalNatureCategory != null
+                || maintainerLegalNatureCategoryDisplay != null) {
+                retVal.setMaintainerLegalNatureCategory(
+                    new Coding()
+                        .setSystem(
+                            Utils.namingSystems.get("categoriaNaturezaJuridica")
+                        )
+                        .setCode(maintainerLegalNatureCategory)
+                        .setDisplay(maintainerLegalNatureCategoryDisplay)
+                );
+            }
+
+            // codigoNaturezaJuridicaConclaMantenedora
+            //     -> Extension (Maintainer's Legal Nature Code).
+            String maintainerLegalNatureCode
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get("maintainerLegalNatureCode"),
+                    0
+                );
+            String maintainerLegalNatureCodeDisplay
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get(
+                        "maintainerLegalNatureCodeDisplay"
+                    ),
+                    0
+                );
+            if (maintainerLegalNatureCode != null
+                || maintainerLegalNatureCodeDisplay != null) {
+                
+                // The correct format for the Legal Nature Code, according to
+                // the Brazilian Institute of Geography and Statistics (IBGE).
+                String formattedMaintainerLegalNatureCode
+                    = (maintainerLegalNatureCode != null
+                        ? maintainerLegalNatureCode.substring(0, 3)
+                            + "-"
+                            + maintainerLegalNatureCode.substring(3)
+                        : maintainerLegalNatureCode);
+                
+                retVal.setMaintainerLegalNatureCode(
+                    new Coding()
+                        .setSystem(
+                            Utils.namingSystems.get("codigoNaturezaJuridica")
+                        )
+                        .setCode(formattedMaintainerLegalNatureCode)
+                        .setDisplay(maintainerLegalNatureCodeDisplay)
+                );
+            }
+            
             // Phones -> contact
             int phoneCount = countNodesFromXml(document, xpath,
                 Utils.xpathExpressions.get("phones"));

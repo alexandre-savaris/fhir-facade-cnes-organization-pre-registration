@@ -51,6 +51,28 @@ public class OrganizationCnesPreRegistration extends Organization {
     @Child(name = "maintainerCnpj")
     private Coding maintainerCnpj;
 
+    // Maintainer's Legal Nature Category.
+    @Description(
+        shortDefinition
+            = "The Category of the Legal Nature for the Maintainer of the Organization.")
+    @ca.uhn.fhir.model.api.annotation.Extension(
+        url = "https://alexandresavaris.org/fhir/r4/Extension/cnes/CategoriaNaturezaJuridicaMantenedora",
+        isModifier = false,
+        definedLocally = true)
+    @Child(name = "maintainerLegalNatureCategory")
+    private Coding maintainerLegalNatureCategory;
+
+    // Maintainer's Legal Nature Code.
+    @Description(
+        shortDefinition
+            = "The Code of the Legal Nature for the Maintainer of the Organization.")
+    @ca.uhn.fhir.model.api.annotation.Extension(
+        url = "https://alexandresavaris.org/fhir/r4/Extension/cnes/CodigoNaturezaJuridicaMantenedora",
+        isModifier = false,
+        definedLocally = true)
+    @Child(name = "maintainerLegalNatureCode")
+    private Coding maintainerLegalNatureCode;
+    
     public DateType getUpdateDate() {
         
         if (this.updateDate == null) {
@@ -106,6 +128,35 @@ public class OrganizationCnesPreRegistration extends Organization {
         
         this.maintainerCnpj = maintainerCnpj;
     }
+
+    public Coding getMaintainerLegalNatureCategory() {
+        
+        if (this.maintainerLegalNatureCategory == null) {
+            this.maintainerLegalNatureCategory = new Coding();
+        }
+        
+        return this.maintainerLegalNatureCategory;
+    }
+    
+    public void setMaintainerLegalNatureCategory(
+        Coding maintainerLegalNatureCategory) {
+        
+        this.maintainerLegalNatureCategory = maintainerLegalNatureCategory;
+    }
+
+    public Coding getMaintainerLegalNatureCode() {
+        
+        if (this.maintainerLegalNatureCode == null) {
+            this.maintainerLegalNatureCode = new Coding();
+        }
+        
+        return this.maintainerLegalNatureCode;
+    }
+    
+    public void setMaintainerLegalNatureCode(Coding maintainerLegalNatureCode) {
+        
+        this.maintainerLegalNatureCode = maintainerLegalNatureCode;
+    }
     
     // Are all elements of the resource instance null?
     @Override
@@ -115,7 +166,9 @@ public class OrganizationCnesPreRegistration extends Organization {
           this.updateDate,
           this.maintainerCnpj,
           this.legalNatureCategory,
-          this.legalNatureCode
+          this.legalNatureCode,
+          this.maintainerLegalNatureCategory,
+          this.maintainerLegalNatureCode
       );
     }
 }
