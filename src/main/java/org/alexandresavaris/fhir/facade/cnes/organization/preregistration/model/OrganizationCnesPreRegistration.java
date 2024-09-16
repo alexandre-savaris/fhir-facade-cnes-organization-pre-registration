@@ -39,6 +39,17 @@ public class OrganizationCnesPreRegistration extends Organization {
         definedLocally = true)
     @Child(name = "legalNatureCode")
     private Coding legalNatureCode;
+
+    // Pre-registration Situation.
+    @Description(
+        shortDefinition
+            = "The situation of the pre-registration for the Organization.")
+    @ca.uhn.fhir.model.api.annotation.Extension(
+        url = "https://alexandresavaris.org/fhir/r4/Extension/cnes/SituacaoPreCadastro",
+        isModifier = false,
+        definedLocally = true)
+    @Child(name = "preRegistrationSituation")
+    private Coding preRegistrationSituation;
     
     // Maintainer's CNPJ.
     @Description(
@@ -73,6 +84,33 @@ public class OrganizationCnesPreRegistration extends Organization {
     @Child(name = "maintainerLegalNatureCode")
     private Coding maintainerLegalNatureCode;
     
+    /**
+     * Search parameter: <b>preRegistrationSituation</b>
+     * <p>
+     * Description: <b>The pre-registration situation for the Organization.</b><br>
+     * Type: <b>token</b><br>
+     * Path: <b>Organization.extension('https://alexandresavaris.org/fhir/r4/Extension/cnes/SituacaoPreCadastro')</b><br>
+     * </p>
+     */
+    @SearchParamDefinition(
+        name = "preRegistrationSituation",
+        path = "Organization.extension('https://alexandresavaris.org/fhir/r4/Extension/cnes/SituacaoPreCadastro')",
+        description = "The pre-registration situation for the Organization.",
+        type = "token")
+    public static final String SP_PRE_REGISTRATION_SITUATION = "preRegistrationSituation";
+    /**
+     * <b>Fluent Client</b> search parameter constant for <b>preRegistrationSituation</b>
+     * <p>
+     * Description: <b>The pre-registration situation for the Organization.</b><br>
+     * Type: <b>token</b><br>
+     * Path: <b>Organization.extension('https://alexandresavaris.org/fhir/r4/Extension/cnes/SituacaoPreCadastro')</b><br>
+     * </p>
+     */
+    public static final ca.uhn.fhir.rest.gclient.TokenClientParam PRE_REGISTRATION_SITUATION
+        = new ca.uhn.fhir.rest.gclient.TokenClientParam(
+            SP_PRE_REGISTRATION_SITUATION
+        );
+
     public DateType getUpdateDate() {
         
         if (this.updateDate == null) {
@@ -113,6 +151,20 @@ public class OrganizationCnesPreRegistration extends Organization {
     public void setLegalNatureCode(Coding legalNatureCode) {
         
         this.legalNatureCode = legalNatureCode;
+    }
+
+    public Coding getPreRegistrationSituation() {
+        
+        if (this.preRegistrationSituation == null) {
+            this.preRegistrationSituation = new Coding();
+        }
+        
+        return this.preRegistrationSituation;
+    }
+    
+    public void setPreRegistrationSituation(Coding preRegistrationSituation) {
+        
+        this.preRegistrationSituation = preRegistrationSituation;
     }
 
     public Coding getMaintainerCnpj() {
@@ -164,9 +216,10 @@ public class OrganizationCnesPreRegistration extends Organization {
         
       return super.isEmpty() && ElementUtil.isEmpty(
           this.updateDate,
-          this.maintainerCnpj,
           this.legalNatureCategory,
           this.legalNatureCode,
+          this.preRegistrationSituation,
+          this.maintainerCnpj,
           this.maintainerLegalNatureCategory,
           this.maintainerLegalNatureCode
       );

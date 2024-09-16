@@ -1,0 +1,73 @@
+{
+  "resourceType": "StructureDefinition",
+  "id": "extension-cnes-situacao-pre-cadastro",
+  "language": "pt-BR",
+  "url": "https://alexandresavaris.org/fhir/r4/Extension/cnes/SituacaoPreCadastro",
+  "version": "1.0.0",
+  "name": "SituacaoPreCadastro",
+  "title": "Código da Situação de Pré-cadastro do Estabelecimento de Saúde no CNES",
+  "status": "active",
+  "experimental": false,
+  "date": "2024-09-16",
+  "publisher": "Alexandre Savaris",
+  "contact": [
+    {
+      "name": "Alexandre Savaris",
+      "telecom": [
+        {
+          "system": "email",
+          "value": "alexandre.savaris@gmail.com"
+        }
+      ]
+    }
+  ],
+  "description": "Código da Situação de Pré-cadastro do Estabelecimento de Saúde no Cadastro Nacional de Estabelecimentos de Saúde (CNES) mantido pelo Departamento de Informação e Informática do Sistema Único de Saúde (DATASUS).",
+  "jurisdiction": [
+    {
+      "coding": [
+        {
+          "system": "urn:iso:std:iso:3166",
+          "code": "BRA",
+          "display": "Brazil",
+          "userSelected": false
+        }
+      ]
+    }
+  ],
+  "purpose": "Identificar uma Situação de Pré-cadastro do Estabelecimento de Saúde no CNES por meio de um código definido e mantido pelo DATASUS.",
+  "fhirVersion": "4.0.1",
+  "kind": "complex-type",
+  "abstract": true,
+  "context": [
+    {
+      "type": "element",
+      "expression": "Organization"
+    }
+  ],
+  "type": "Extension",
+  "baseDefinition": "http://hl7.org/fhir/StructureDefinition/Extension",
+  "derivation": "constraint",
+  "differential": {
+    "element": [
+      {
+        "id": "Extension.id",
+        "path": "Extension.id",
+        "max": "0"
+      },
+      {
+        "id": "Extension.url",
+        "path": "Extension.url",
+        "fixedUri": "https://alexandresavaris.org/fhir/r4/Extension/cnes/SituacaoPreCadastro"
+      },
+      {
+        "id": "Extension.value[x]",
+        "path": "Extension.value[x]",
+        "type": [
+          {
+            "code": "Coding"
+          }
+        ]
+      }
+    ]
+  }
+}

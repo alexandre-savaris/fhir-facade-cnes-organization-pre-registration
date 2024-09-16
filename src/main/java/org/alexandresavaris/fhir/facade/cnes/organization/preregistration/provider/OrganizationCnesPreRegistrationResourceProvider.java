@@ -583,6 +583,8 @@ public class OrganizationCnesPreRegistrationResourceProvider
      * search operation.
      *
      * @param theId The identifier of the resource instance to be searched for.
+     * @param preRegistrationSituation The pre-registration situation for the
+     * Organization.
      * @param theRequestDetails Details from the performed request.
      * @param theInterceptorBroadcaster For broadcasting the related event to
      * known interceptors.
@@ -593,13 +595,22 @@ public class OrganizationCnesPreRegistrationResourceProvider
     public List<OrganizationCnesPreRegistration> search(
         @RequiredParam(name = OrganizationCnesPreRegistration.SP_IDENTIFIER)
             TokenParam theId,
+        @RequiredParam(name = OrganizationCnesPreRegistration.SP_PRE_REGISTRATION_SITUATION)
+            TokenParam preRegistrationSituation,
         RequestDetails theRequestDetails,
         IInterceptorBroadcaster theInterceptorBroadcaster) {
         // The resource instance to be returned.
         OrganizationCnesPreRegistration retVal = null;
+
         // System and value for the identifier.
         String identifierSystem = theId.getSystem();
         String identifier = theId.getValue();
+
+        // System and value for the pre-registration situation code.
+        String preRegistrationSituationSystem
+            = preRegistrationSituation.getSystem();
+        String preRegistrationSituationCode
+            = preRegistrationSituation.getValue();
 
         try {
 
