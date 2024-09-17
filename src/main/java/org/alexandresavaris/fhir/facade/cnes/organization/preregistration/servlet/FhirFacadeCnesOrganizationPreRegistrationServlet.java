@@ -90,6 +90,14 @@ public class FhirFacadeCnesOrganizationPreRegistrationServlet
             file = new File(url.getFile());
             String cnesFilter = new String(Files.readAllBytes(file.toPath()));
 
+            // Load the XML snippet for filtering by Pre-registration situation.
+            url = this.getClass()
+                .getClassLoader()
+                .getResource("soap/envelopes/filtroSituacao.xml");
+            file = new File(url.getFile());
+            String situationFilter
+                = new String(Files.readAllBytes(file.toPath()));
+
             /*
              * Resource providers that handle specific types of resources.
              */
@@ -99,7 +107,8 @@ public class FhirFacadeCnesOrganizationPreRegistrationServlet
                     username,
                     password,
                     soapEnvelopeContent,
-                    cnesFilter
+                    cnesFilter,
+                    situationFilter
                 )
             );
             setResourceProviders(providers);

@@ -160,6 +160,19 @@ a browser.
             </tbody>
         </table>
     </th:block>
+    <!-- Pre-registration situation. -->
+    <th:block th:unless="${resource.preRegistrationSituation} == null">
+        <br />
+        <div class="hapiSubHeaderText" th:text="'Situação do Pré-cadastro'"/>
+        <table class="hapiPropertyTable">
+            <tbody>
+                <tr>
+                    <td th:text="${resource.preRegistrationSituation.code}"></td>
+                    <td th:text="${resource.preRegistrationSituation.display}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </th:block>
     <!-- Update date. -->
     <th:block th:unless="${resource.updateDate} == null">
         <br />

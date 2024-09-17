@@ -20,6 +20,9 @@ public class Utils {
     public static final Map<String, String> oids = new HashMap<>();
     // Map of Extensions used in the OrganizationCnes instance.
     public static final Map<String, String> extensions = new HashMap<>();
+    // Map of Pre-registration Situation codes.
+    public static final Map<String, String> preRegistrationSituations
+        = new HashMap<>();
     
     static {
 
@@ -136,6 +139,8 @@ public class Utils {
             "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/TipoEmail");
         namingSystems.put("phoneType",
             "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/TipoTelefone");
+        namingSystems.put("situacaoPreCadastro",
+            "https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/SituacaoPreCadastro");
 
         // Insert OIDs.
         // https://www.hl7.org/oid/index.cfm
@@ -147,5 +152,10 @@ public class Utils {
             "cityCodeIbge",
             "https://alexandresavaris.org/fhir/r4/Extension/cnes/CodigoMunicipioIbge"
         );
+
+        // Insert Pre-registration Situation codes.
+        preRegistrationSituations.put("A", "ATIVO");
+        preRegistrationSituations.put("D", "DESATIVADO");
+        preRegistrationSituations.put("E", "EXCLUÍDO");
     }
 }

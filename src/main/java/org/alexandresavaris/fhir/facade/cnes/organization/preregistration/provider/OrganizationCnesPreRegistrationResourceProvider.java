@@ -18,7 +18,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,6 +56,7 @@ public class OrganizationCnesPreRegistrationResourceProvider
     private String contentOfSoapEnvelope = null;
     // Code snippets for filtering.
     private String codeSnippetForFilteringByCnes = null;
+    private String codeSnippetForFilteringBySituation = null;
 
     // The empty constructor.
     public OrganizationCnesPreRegistrationResourceProvider() {
@@ -68,7 +68,8 @@ public class OrganizationCnesPreRegistrationResourceProvider
         String username,
         String password,
         String soapEnvelopeContent,
-        String cnesFilter) {
+        String cnesFilter,
+        String situationFilter) {
         
         this.endpointEstabelecimentoSaudeService
             = endpointEstabelecimentoSaudeService;
@@ -76,6 +77,7 @@ public class OrganizationCnesPreRegistrationResourceProvider
         this.password = password;
         this.contentOfSoapEnvelope = soapEnvelopeContent;
         this.codeSnippetForFilteringByCnes = cnesFilter;
+        this.codeSnippetForFilteringBySituation = situationFilter;
     }
 
     /**
@@ -108,451 +110,14 @@ public class OrganizationCnesPreRegistrationResourceProvider
         IInterceptorBroadcaster theInterceptorBroadcaster) {
         // The resource instance to be returned.
         OrganizationCnesPreRegistration retVal = null;
-        
+
         try {
 
-            String snippetFilter = MessageFormat.format(
-                this.codeSnippetForFilteringByCnes, theId.getIdPart()
-            );
-            String updatedContentOfSoapEnvelope = MessageFormat.format(
-                this.contentOfSoapEnvelope,
-                username,
-                password,
-                snippetFilter,
-                ""
-            );
+            // Access the SOAP Webservice.
+            String responseBody = accessSoapWebservice(theId.getIdPart(), null);
             
-            // Access the SOAP webservice.
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(this.endpointEstabelecimentoSaudeService))
-                .version(HttpClient.Version.HTTP_2)
-                .POST(HttpRequest.BodyPublishers.ofString(
-                    updatedContentOfSoapEnvelope)
-                )
-                .header("Content-Type", "application/soap+xml")
-                .header("charset", "UTF-8")
-                .build();
-            HttpResponse<String> response = HttpClient.newBuilder()
-                .build()
-                .send(request, HttpResponse.BodyHandlers.ofString());
-            
-            // To guarantee that namespace prefixes are unique throughout the
-            // whole document, replace known duplicate values with arbitrary
-            // ones.
-            String responseBody = response.body()
-                .replace(
-                    "tip:codigoTipoTelefone xmlns:tip",
-                    "tipTel:codigoTipoTelefone xmlns:tipTel"
-                )
-                .replace(
-                    "tip:descricaoTipoTelefone xmlns:tip",
-                    "tipTel:descricaoTipoTelefone xmlns:tipTel"
-                )
-                .replace(
-                    "tip:codigoTipoTelefone",
-                    "tipTel:codigoTipoTelefone"
-                )
-                .replace(
-                    "tip:descricaoTipoTelefone",
-                    "tipTel:descricaoTipoTelefone"
-                );
-            
-            // For debugging purposes.
-            // Uncomment to see the response body from the SOAP Webservice.
-            System.out.println(
-                "----------------------------------------------------------"
-            );
-            System.out.println(response.statusCode());
-            System.out.println(responseBody);
-            System.out.println(
-                "----------------------------------------------------------"
-            );
-
-            int responseStatusCode = response.statusCode();
-            if (responseStatusCode != 200) {
-                // TODO: verify why the message used for the exception doesn't
-                // appear in the OperationOutcome instance.
-                throw new InternalErrorException(
-                    "O webservice SOAP retornou o código de status HTTP "
-                        + responseStatusCode
-                        + " ao acessar os dados do estabelecimento de saúde com o Id: "
-                        + theId);
-            }
-            
-            // Fill in the resource with data from the response.
-            retVal = new OrganizationCnesPreRegistration();
-            
-            // The logical ID replicates the Organization's CNES.
-            retVal.setId(theId);
-            
-            // XML parsing for content extraction.
-            DocumentBuilderFactory factory
-                = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document
-                = builder.parse(
-                    new InputSource(new StringReader(responseBody))
-                );
-            
-            // Setting namespaces for using XPath.
-            XPathFactory xpathfactory = XPathFactory.newInstance();
-            XPath xpath = xpathfactory.newXPath();
-            NamespaceContext context = new NamespaceContextMap(
-                Utils.xmlNamespaces);
-            xpath.setNamespaceContext(context);
-
-            // CodigoCNES -> Identifier: CNES.
-            String cnes
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("cnes"),
-                    0
-                );
-            if (cnes != null) {
-                retVal.addIdentifier()
-                    .setSystem("urn:oid:" + Utils.oids.get("cnes"))
-                    .setValue(cnes);
-            }
-
-            // numeroCNPJ -> Identifier: CNPJ.
-            String cnpj
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("cnpj"),
-                    0
-                );
-            if (cnpj != null) {
-                retVal.addIdentifier()
-                    .setSystem(Utils.namingSystems.get("cnpj"))
-                    .setValue(cnpj);
-            }
-
-            // nomeFantasia -> name.
-            String name
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("name"),
-                    0
-                );
-            if (name != null) {
-                retVal.setName(name);
-            }
-
-            // nomeEmpresarial -> alias.
-            String alias
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("alias"),
-                    0
-                );
-            if (alias != null) {
-                retVal.addAlias(alias);
-            }
-            
-            // Endereco -> Address.
-            String street = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("street"),
-                0
-            );
-            String number = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("number"),
-                0
-            );
-            String neighborhood = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("neighborhood"),
-                0
-            );
-            String city = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("city"),
-                0
-            );
-            String state = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("state"),
-                0
-            );
-            String postalCode = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("postalCode"),
-                0
-            );
-            String cityCodeIbge
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("cityCodeIbge"),
-                    0
-                );
-            if (street != null || number != null || neighborhood != null
-                    || city != null || state != null || postalCode != null
-                    || cityCodeIbge != null) {
-
-                String addressTextTemplate = "{0}, {1} - {2} - {3} - {4}";
-                String addressText = java.text.MessageFormat.format(
-                    addressTextTemplate,
-                    (street != null ? street : "<SEM LOGRADOURO>"),
-                    (number != null
-                        ? number
-                        : new String(
-                            "<SEM NÙMERO>".getBytes("ISO-8859-1"), "UTF-8")
-                        ),
-                    (neighborhood != null ? neighborhood : "<SEM BAIRRO>"),
-                    (city != null ? city : "<SEM CIDADE>"),
-                    (state != null ? state : "<SEM UF>")
-                );
-                
-                Address address = new Address()
-                    .setUse(Address.AddressUse.WORK)
-                    .setType(Address.AddressType.BOTH)
-                    .setText(addressText)
-                    .setCity(city)
-                    .setState(state)
-                    .setPostalCode(postalCode)
-                    .setCountry("BRA");
-
-                // Extensions for IBGE codes.
-                if (cityCodeIbge != null) {
-                    Extension cityCodeIbgeExtension
-                        = new Extension(Utils.extensions.get("cityCodeIbge"));
-                    cityCodeIbgeExtension.setValue(
-                        new Coding()
-                            .setSystem("urn:oid:" + Utils.oids.get("ibgeCode"))
-                            .setCode(cityCodeIbge)
-                            .setDisplay(
-                                new String(
-                                    "Código do município no IBGE"
-                                        .getBytes("ISO-8859-1"),
-                                    "UTF-8"
-                                )
-                            )
-                    );
-                    address.addExtension(cityCodeIbgeExtension);
-                }
-
-                retVal.addAddress(address);
-                
-            }
-            
-            // dataAtualizacao -> Extension (update date).
-            String updateDate
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("updateDate"),
-                    0
-                );
-            if (updateDate != null) {
-                retVal.setUpdateDate(
-                    new DateType(updateDate)
-                );
-            }
-
-            // tipoNaturezaJuridica -> Extension (Legal Nature Category).
-            String legalNatureCategory
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("legalNatureCategory"),
-                    0
-                );
-            String legalNatureCategoryDisplay
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("legalNatureCategoryDisplay"),
-                    0
-                );
-            if (legalNatureCategory != null
-                || legalNatureCategoryDisplay != null) {
-                retVal.setLegalNatureCategory(
-                    new Coding()
-                        .setSystem(
-                            Utils.namingSystems.get("categoriaNaturezaJuridica")
-                        )
-                        .setCode(legalNatureCategory)
-                        .setDisplay(legalNatureCategoryDisplay)
-                );
-            }
-
-            // codigoNaturezaJuridicaConcla -> Extension (Legal Nature Code).
-            String legalNatureCode
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("legalNatureCode"),
-                    0
-                );
-            String legalNatureCodeDisplay
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("legalNatureCodeDisplay"),
-                    0
-                );
-            if (legalNatureCode != null
-                || legalNatureCodeDisplay != null) {
-                
-                // The correct format for the Legal Nature Code, according to
-                // the Brazilian Institute of Geography and Statistics (IBGE).
-                String formattedLegalNatureCode
-                    = (legalNatureCode != null
-                        ? legalNatureCode.substring(0, 3)
-                            + "-"
-                            + legalNatureCode.substring(3)
-                        : legalNatureCode);
-                
-                retVal.setLegalNatureCode(
-                    new Coding()
-                        .setSystem(
-                            Utils.namingSystems.get("codigoNaturezaJuridica")
-                        )
-                        .setCode(formattedLegalNatureCode)
-                        .setDisplay(legalNatureCodeDisplay)
-                );
-            }
-            
-            // CNPJMantenedora -> Extension (Maintainer's CNPJ).
-            String maintainerCnpj
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("maintainerCnpj"),
-                    0
-                );
-            if (maintainerCnpj != null) {
-                retVal.setMaintainerCnpj(
-                    new Coding()
-                        .setSystem(Utils.namingSystems.get("cnpj"))
-                        .setCode(maintainerCnpj)
-                        .setDisplay(
-                            new String(
-                                "Número do CNPJ da mantenedora"
-                                    .getBytes("ISO-8859-1"),
-                                "UTF-8"
-                            )
-                        )
-                );
-            }
-
-            // tipoNaturezaJuridicaMantenedora
-            //     -> Extension (Maintainer's Legal Nature Category).
-            String maintainerLegalNatureCategory
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("maintainerLegalNatureCategory"),
-                    0
-                );
-            String maintainerLegalNatureCategoryDisplay
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get(
-                        "maintainerLegalNatureCategoryDisplay"
-                    ),
-                    0
-                );
-            if (maintainerLegalNatureCategory != null
-                || maintainerLegalNatureCategoryDisplay != null) {
-                retVal.setMaintainerLegalNatureCategory(
-                    new Coding()
-                        .setSystem(
-                            Utils.namingSystems.get("categoriaNaturezaJuridica")
-                        )
-                        .setCode(maintainerLegalNatureCategory)
-                        .setDisplay(maintainerLegalNatureCategoryDisplay)
-                );
-            }
-
-            // codigoNaturezaJuridicaConclaMantenedora
-            //     -> Extension (Maintainer's Legal Nature Code).
-            String maintainerLegalNatureCode
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("maintainerLegalNatureCode"),
-                    0
-                );
-            String maintainerLegalNatureCodeDisplay
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get(
-                        "maintainerLegalNatureCodeDisplay"
-                    ),
-                    0
-                );
-            if (maintainerLegalNatureCode != null
-                || maintainerLegalNatureCodeDisplay != null) {
-                
-                // The correct format for the Legal Nature Code, according to
-                // the Brazilian Institute of Geography and Statistics (IBGE).
-                String formattedMaintainerLegalNatureCode
-                    = (maintainerLegalNatureCode != null
-                        ? maintainerLegalNatureCode.substring(0, 3)
-                            + "-"
-                            + maintainerLegalNatureCode.substring(3)
-                        : maintainerLegalNatureCode);
-                
-                retVal.setMaintainerLegalNatureCode(
-                    new Coding()
-                        .setSystem(
-                            Utils.namingSystems.get("codigoNaturezaJuridica")
-                        )
-                        .setCode(formattedMaintainerLegalNatureCode)
-                        .setDisplay(maintainerLegalNatureCodeDisplay)
-                );
-            }
-            
-            // Phones -> contact
-            int phoneCount = countNodesFromXml(document, xpath,
-                Utils.xpathExpressions.get("phones"));
-            for (int i = 0; i < phoneCount; i++) {
-                String phoneNumber
-                    = extractSingleValueFromXml(document, xpath,
-                        Utils.xpathExpressions.get("phoneNumber"),
-                        i
-                    );
-                if (phoneNumber != null) {
-                    String phoneTemplate = "{0} {1}";
-                    String phone = java.text.MessageFormat.format(
-                        phoneTemplate,
-                        extractSingleValueFromXml(document, xpath,
-                            Utils.xpathExpressions.get("phoneAreaCode"),
-                            i
-                        ),
-                        phoneNumber
-                    );
-                    retVal.addContact()
-                        .addTelecom(
-                            new ContactPoint()
-                                .setSystem(ContactPoint.ContactPointSystem.PHONE)
-                                .setValue(phone)
-                                .setUse(ContactPoint.ContactPointUse.WORK)
-                        )
-                        .setPurpose(
-                            new CodeableConcept(
-                                new Coding()
-                                    .setSystem(Utils.namingSystems.get("phoneType"))
-                                    .setCode(
-                                        extractSingleValueFromXml(document, xpath,
-                                            Utils.xpathExpressions.get("phoneType"),
-                                            i
-                                        )
-                                    )
-                                    .setDisplay(
-                                        extractSingleValueFromXml(document, xpath,
-                                            Utils.xpathExpressions.get(
-                                                "phoneDescription"
-                                            ),
-                                            i
-                                        )
-                                    )
-                            )
-                        );
-                }
-            }
-            
-            // Email -> contact
-            String email
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("email"),
-                    0
-                );
-            if (email != null) {
-                retVal.addContact()
-                    .addTelecom(
-                        new ContactPoint()
-                            .setSystem(ContactPoint.ContactPointSystem.EMAIL)
-                            .setValue(email)
-                            .setUse(ContactPoint.ContactPointUse.WORK)
-                    )
-                    .setPurpose(
-                        new CodeableConcept(
-                            new Coding()
-                                .setSystem(Utils.namingSystems.get("emailType"))
-                                .setCode(
-                                    extractSingleValueFromXml(document, xpath,
-                                        Utils.xpathExpressions.get("emailType"),
-                                        0
-                                    )
-                                )
-                        )
-                    );
-            }
+            // Fill in the resource instance.
+            retVal = fillResourceInstance(theId, responseBody, null);
             
         } catch (URISyntaxException
                     | IOException
@@ -614,448 +179,16 @@ public class OrganizationCnesPreRegistrationResourceProvider
 
         try {
 
-            String snippetFilter = MessageFormat.format(
-                this.codeSnippetForFilteringByCnes, identifier
+            // Access the SOAP Webservice.
+            String responseBody = accessSoapWebservice(
+                identifier, preRegistrationSituationCode);
+
+            // Fill in the resource instance.
+            retVal = fillResourceInstance(
+                new IdType(identifier),
+                responseBody,
+                preRegistrationSituationCode
             );
-            String updatedContentOfSoapEnvelope = MessageFormat.format(
-                this.contentOfSoapEnvelope,
-                username,
-                password,
-                snippetFilter,
-                ""
-            );
-            
-            // Access the SOAP webservice.
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(this.endpointEstabelecimentoSaudeService))
-                .version(HttpClient.Version.HTTP_2)
-                .POST(HttpRequest.BodyPublishers.ofString(
-                    updatedContentOfSoapEnvelope)
-                )
-                .header("Content-Type", "application/soap+xml")
-                .header("charset", "UTF-8")
-                .build();
-            HttpResponse<String> response = HttpClient.newBuilder()
-                .build()
-                .send(request, HttpResponse.BodyHandlers.ofString());
-            
-            // To guarantee that namespace prefixes are unique throughout the
-            // whole document, replace known duplicate values with arbitrary
-            // ones.
-            String responseBody = response.body()
-                .replace(
-                    "tip:codigoTipoTelefone xmlns:tip",
-                    "tipTel:codigoTipoTelefone xmlns:tipTel"
-                )
-                .replace(
-                    "tip:descricaoTipoTelefone xmlns:tip",
-                    "tipTel:descricaoTipoTelefone xmlns:tipTel"
-                )
-                .replace(
-                    "tip:codigoTipoTelefone",
-                    "tipTel:codigoTipoTelefone"
-                )
-                .replace(
-                    "tip:descricaoTipoTelefone",
-                    "tipTel:descricaoTipoTelefone"
-                );
-            
-            // For debugging purposes.
-            // Uncomment to see the response body from the SOAP Webservice.
-            System.out.println(
-                "----------------------------------------------------------"
-            );
-            System.out.println(response.statusCode());
-            System.out.println(responseBody);
-            System.out.println(
-                "----------------------------------------------------------"
-            );
-
-            int responseStatusCode = response.statusCode();
-            if (responseStatusCode != 200) {
-                // TODO: verify why the message used for the exception doesn't
-                // appear in the OperationOutcome instance.
-                throw new InternalErrorException(
-                    "O webservice SOAP retornou o código de status HTTP "
-                        + responseStatusCode
-                        + " ao acessar os dados do estabelecimento de saúde com o Id: "
-                        + theId);
-            }
-            
-            // Fill in the resource with data from the response.
-            retVal = new OrganizationCnesPreRegistration();
-            
-            // The logical ID replicates the Organization's CNES.
-            retVal.setId(new IdType(identifier));
-            
-            // XML parsing for content extraction.
-            DocumentBuilderFactory factory
-                = DocumentBuilderFactory.newInstance();
-            factory.setNamespaceAware(true);
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document
-                = builder.parse(
-                    new InputSource(new StringReader(responseBody))
-                );
-            
-            // Setting namespaces for using XPath.
-            XPathFactory xpathfactory = XPathFactory.newInstance();
-            XPath xpath = xpathfactory.newXPath();
-            NamespaceContext context = new NamespaceContextMap(
-                Utils.xmlNamespaces);
-            xpath.setNamespaceContext(context);
-
-            // CodigoCNES -> Identifier: CNES.
-            String cnes
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("cnes"),
-                    0
-                );
-            if (cnes != null) {
-                retVal.addIdentifier()
-                    .setSystem("urn:oid:" + Utils.oids.get("cnes"))
-                    .setValue(cnes);
-            }
-
-            // numeroCNPJ -> Identifier: CNPJ.
-            String cnpj
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("cnpj"),
-                    0
-                );
-            if (cnpj != null) {
-                retVal.addIdentifier()
-                    .setSystem(Utils.namingSystems.get("cnpj"))
-                    .setValue(cnpj);
-            }
-
-            // nomeFantasia -> name.
-            String name
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("name"),
-                    0
-                );
-            if (name != null) {
-                retVal.setName(name);
-            }
-
-            // nomeEmpresarial -> alias.
-            String alias
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("alias"),
-                    0
-                );
-            if (alias != null) {
-                retVal.addAlias(alias);
-            }
-            
-            // Endereco -> Address.
-            String street = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("street"),
-                0
-            );
-            String number = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("number"),
-                0
-            );
-            String neighborhood = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("neighborhood"),
-                0
-            );
-            String city = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("city"),
-                0
-            );
-            String state = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("state"),
-                0
-            );
-            String postalCode = extractSingleValueFromXml(document, xpath,
-                Utils.xpathExpressions.get("postalCode"),
-                0
-            );
-            String cityCodeIbge
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("cityCodeIbge"),
-                    0
-                );
-            if (street != null || number != null || neighborhood != null
-                    || city != null || state != null || postalCode != null
-                    || cityCodeIbge != null) {
-
-                String addressTextTemplate = "{0}, {1} - {2} - {3} - {4}";
-                String addressText = java.text.MessageFormat.format(
-                    addressTextTemplate,
-                    (street != null ? street : "<SEM LOGRADOURO>"),
-                    (number != null
-                        ? number
-                        : new String(
-                            "<SEM NÙMERO>".getBytes("ISO-8859-1"), "UTF-8")
-                        ),
-                    (neighborhood != null ? neighborhood : "<SEM BAIRRO>"),
-                    (city != null ? city : "<SEM CIDADE>"),
-                    (state != null ? state : "<SEM UF>")
-                );
-                
-                Address address = new Address()
-                    .setUse(Address.AddressUse.WORK)
-                    .setType(Address.AddressType.BOTH)
-                    .setText(addressText)
-                    .setCity(city)
-                    .setState(state)
-                    .setPostalCode(postalCode)
-                    .setCountry("BRA");
-
-                // Extensions for IBGE codes.
-                if (cityCodeIbge != null) {
-                    Extension cityCodeIbgeExtension
-                        = new Extension(Utils.extensions.get("cityCodeIbge"));
-                    cityCodeIbgeExtension.setValue(
-                        new Coding()
-                            .setSystem("urn:oid:" + Utils.oids.get("ibgeCode"))
-                            .setCode(cityCodeIbge)
-                            .setDisplay(
-                                new String(
-                                    "Código do município no IBGE"
-                                        .getBytes("ISO-8859-1"),
-                                    "UTF-8"
-                                )
-                            )
-                    );
-                    address.addExtension(cityCodeIbgeExtension);
-                }
-
-                retVal.addAddress(address);
-                
-            }
-            
-            // dataAtualizacao -> Extension (update date).
-            String updateDate
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("updateDate"),
-                    0
-                );
-            if (updateDate != null) {
-                retVal.setUpdateDate(
-                    new DateType(updateDate)
-                );
-            }
-
-            // tipoNaturezaJuridica -> Extension (Legal Nature Category).
-            String legalNatureCategory
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("legalNatureCategory"),
-                    0
-                );
-            String legalNatureCategoryDisplay
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("legalNatureCategoryDisplay"),
-                    0
-                );
-            if (legalNatureCategory != null
-                || legalNatureCategoryDisplay != null) {
-                retVal.setLegalNatureCategory(
-                    new Coding()
-                        .setSystem(
-                            Utils.namingSystems.get("categoriaNaturezaJuridica")
-                        )
-                        .setCode(legalNatureCategory)
-                        .setDisplay(legalNatureCategoryDisplay)
-                );
-            }
-
-            // codigoNaturezaJuridicaConcla -> Extension (Legal Nature Code).
-            String legalNatureCode
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("legalNatureCode"),
-                    0
-                );
-            String legalNatureCodeDisplay
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("legalNatureCodeDisplay"),
-                    0
-                );
-            if (legalNatureCode != null
-                || legalNatureCodeDisplay != null) {
-                
-                // The correct format for the Legal Nature Code, according to
-                // the Brazilian Institute of Geography and Statistics (IBGE).
-                String formattedLegalNatureCode
-                    = (legalNatureCode != null
-                        ? legalNatureCode.substring(0, 3)
-                            + "-"
-                            + legalNatureCode.substring(3)
-                        : legalNatureCode);
-                
-                retVal.setLegalNatureCode(
-                    new Coding()
-                        .setSystem(
-                            Utils.namingSystems.get("codigoNaturezaJuridica")
-                        )
-                        .setCode(formattedLegalNatureCode)
-                        .setDisplay(legalNatureCodeDisplay)
-                );
-            }
-            
-            // CNPJMantenedora -> Extension (Maintainer's CNPJ).
-            String maintainerCnpj
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("maintainerCnpj"),
-                    0
-                );
-            if (maintainerCnpj != null) {
-                retVal.setMaintainerCnpj(
-                    new Coding()
-                        .setSystem(Utils.namingSystems.get("cnpj"))
-                        .setCode(maintainerCnpj)
-                        .setDisplay(
-                            new String(
-                                "Número do CNPJ da mantenedora"
-                                    .getBytes("ISO-8859-1"),
-                                "UTF-8"
-                            )
-                        )
-                );
-            }
-
-            // tipoNaturezaJuridicaMantenedora
-            //     -> Extension (Maintainer's Legal Nature Category).
-            String maintainerLegalNatureCategory
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("maintainerLegalNatureCategory"),
-                    0
-                );
-            String maintainerLegalNatureCategoryDisplay
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get(
-                        "maintainerLegalNatureCategoryDisplay"
-                    ),
-                    0
-                );
-            if (maintainerLegalNatureCategory != null
-                || maintainerLegalNatureCategoryDisplay != null) {
-                retVal.setMaintainerLegalNatureCategory(
-                    new Coding()
-                        .setSystem(
-                            Utils.namingSystems.get("categoriaNaturezaJuridica")
-                        )
-                        .setCode(maintainerLegalNatureCategory)
-                        .setDisplay(maintainerLegalNatureCategoryDisplay)
-                );
-            }
-
-            // codigoNaturezaJuridicaConclaMantenedora
-            //     -> Extension (Maintainer's Legal Nature Code).
-            String maintainerLegalNatureCode
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("maintainerLegalNatureCode"),
-                    0
-                );
-            String maintainerLegalNatureCodeDisplay
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get(
-                        "maintainerLegalNatureCodeDisplay"
-                    ),
-                    0
-                );
-            if (maintainerLegalNatureCode != null
-                || maintainerLegalNatureCodeDisplay != null) {
-                
-                // The correct format for the Legal Nature Code, according to
-                // the Brazilian Institute of Geography and Statistics (IBGE).
-                String formattedMaintainerLegalNatureCode
-                    = (maintainerLegalNatureCode != null
-                        ? maintainerLegalNatureCode.substring(0, 3)
-                            + "-"
-                            + maintainerLegalNatureCode.substring(3)
-                        : maintainerLegalNatureCode);
-                
-                retVal.setMaintainerLegalNatureCode(
-                    new Coding()
-                        .setSystem(
-                            Utils.namingSystems.get("codigoNaturezaJuridica")
-                        )
-                        .setCode(formattedMaintainerLegalNatureCode)
-                        .setDisplay(maintainerLegalNatureCodeDisplay)
-                );
-            }
-            
-            // Phones -> contact
-            int phoneCount = countNodesFromXml(document, xpath,
-                Utils.xpathExpressions.get("phones"));
-            for (int i = 0; i < phoneCount; i++) {
-                String phoneNumber
-                    = extractSingleValueFromXml(document, xpath,
-                        Utils.xpathExpressions.get("phoneNumber"),
-                        i
-                    );
-                if (phoneNumber != null) {
-                    String phoneTemplate = "{0} {1}";
-                    String phone = java.text.MessageFormat.format(
-                        phoneTemplate,
-                        extractSingleValueFromXml(document, xpath,
-                            Utils.xpathExpressions.get("phoneAreaCode"),
-                            i
-                        ),
-                        phoneNumber
-                    );
-                    retVal.addContact()
-                        .addTelecom(
-                            new ContactPoint()
-                                .setSystem(ContactPoint.ContactPointSystem.PHONE)
-                                .setValue(phone)
-                                .setUse(ContactPoint.ContactPointUse.WORK)
-                        )
-                        .setPurpose(
-                            new CodeableConcept(
-                                new Coding()
-                                    .setSystem(Utils.namingSystems.get("phoneType"))
-                                    .setCode(
-                                        extractSingleValueFromXml(document, xpath,
-                                            Utils.xpathExpressions.get("phoneType"),
-                                            i
-                                        )
-                                    )
-                                    .setDisplay(
-                                        extractSingleValueFromXml(document, xpath,
-                                            Utils.xpathExpressions.get(
-                                                "phoneDescription"
-                                            ),
-                                            i
-                                        )
-                                    )
-                            )
-                        );
-                }
-            }
-            
-            // Email -> contact
-            String email
-                = extractSingleValueFromXml(document, xpath,
-                    Utils.xpathExpressions.get("email"),
-                    0
-                );
-            if (email != null) {
-                retVal.addContact()
-                    .addTelecom(
-                        new ContactPoint()
-                            .setSystem(ContactPoint.ContactPointSystem.EMAIL)
-                            .setValue(email)
-                            .setUse(ContactPoint.ContactPointUse.WORK)
-                    )
-                    .setPurpose(
-                        new CodeableConcept(
-                            new Coding()
-                                .setSystem(Utils.namingSystems.get("emailType"))
-                                .setCode(
-                                    extractSingleValueFromXml(document, xpath,
-                                        Utils.xpathExpressions.get("emailType"),
-                                        0
-                                    )
-                                )
-                        )
-                    );
-            }
             
         } catch (URISyntaxException
                     | IOException
@@ -1082,6 +215,105 @@ public class OrganizationCnesPreRegistrationResourceProvider
         );
     }
     
+    // Update the content of SOAP Envelope to be sent to the Webservice.
+    private String updateContentOfSoapEnvelope(
+        String identifier, String preRegistrationSituationCode) {
+        // Code snippets to be used into the envelope.
+        String snippetFilterCnes;
+        String snippetFilterSituation = null;
+
+        snippetFilterCnes = MessageFormat.format(
+            this.codeSnippetForFilteringByCnes, identifier
+        );
+        if (preRegistrationSituationCode != null) {
+            snippetFilterSituation = MessageFormat.format(
+                this.codeSnippetForFilteringBySituation,
+                preRegistrationSituationCode
+            );
+        }
+        
+        String updatedContent = MessageFormat.format(
+            this.contentOfSoapEnvelope,
+            this.username,
+            this.password,
+            snippetFilterCnes,
+            (preRegistrationSituationCode != null ? snippetFilterSituation : "")
+        );
+        
+        return updatedContent;
+    }
+    
+    // Access the SOAP Webservice.
+    private String accessSoapWebservice(
+        String identifier, String preRegistrationSituationCode
+    ) throws URISyntaxException, IOException, InterruptedException {
+
+        // Update the content of SOAP Envelope to be sent to the Webservice.
+        String updatedContentOfSoapEnvelope
+            = updateContentOfSoapEnvelope(
+                identifier, preRegistrationSituationCode
+            );
+
+        // Access the SOAP webservice.
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(new URI(this.endpointEstabelecimentoSaudeService))
+            .version(HttpClient.Version.HTTP_2)
+            .POST(HttpRequest.BodyPublishers.ofString(
+                updatedContentOfSoapEnvelope)
+            )
+            .header("Content-Type", "application/soap+xml")
+            .header("charset", "UTF-8")
+            .build();
+        HttpResponse<String> response = HttpClient.newBuilder()
+            .build()
+            .send(request, HttpResponse.BodyHandlers.ofString());
+            
+        // To guarantee that namespace prefixes are unique throughout the
+        // whole document, replace known duplicate values with arbitrary
+        // ones.
+        String responseBody = response.body()
+            .replace(
+                "tip:codigoTipoTelefone xmlns:tip",
+                "tipTel:codigoTipoTelefone xmlns:tipTel"
+            )
+            .replace(
+                "tip:descricaoTipoTelefone xmlns:tip",
+                "tipTel:descricaoTipoTelefone xmlns:tipTel"
+            )
+            .replace(
+                "tip:codigoTipoTelefone",
+                "tipTel:codigoTipoTelefone"
+            )
+            .replace(
+                "tip:descricaoTipoTelefone",
+                "tipTel:descricaoTipoTelefone"
+            );
+            
+        // For debugging purposes.
+        // Uncomment to see the response body from the SOAP Webservice.
+        System.out.println(
+            "----------------------------------------------------------"
+        );
+        System.out.println(response.statusCode());
+        System.out.println(responseBody);
+        System.out.println(
+            "----------------------------------------------------------"
+        );
+
+        int responseStatusCode = response.statusCode();
+        if (responseStatusCode != 200) {
+            // TODO: verify why the message used for the exception doesn't
+            // appear in the OperationOutcome instance.
+            throw new InternalErrorException(
+                "O webservice SOAP retornou o código de status HTTP "
+                    + responseStatusCode
+                    + " ao acessar os dados do estabelecimento de saúde com o Id: "
+                    + identifier);
+        }
+            
+        return responseBody;
+    }
+
     // Extract a single value from the XML document based on an XPath expression.
     private String extractSingleValueFromXml(Document document, XPath xpath,
         String xpathExpression, int index) throws XPathExpressionException {
@@ -1105,6 +337,433 @@ public class OrganizationCnesPreRegistrationResourceProvider
         NodeList nodes = (NodeList) result;
         
         return nodes.getLength();
+    }
+    
+    // Create a Document instance from the XML content.
+    private Document createDocumentFromXml(String responseBody)
+        throws ParserConfigurationException, SAXException, IOException {
+
+        // XML parsing for content extraction.
+        DocumentBuilderFactory factory
+            = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document
+            = builder.parse(
+                new InputSource(new StringReader(responseBody))
+            );
+        
+        return document;
+    }
+    
+    // Set namespaces for XPath use.
+    private XPath setNamespacesForXpath() {
+        
+        // Setting namespaces for using XPath.
+        XPathFactory xpathfactory = XPathFactory.newInstance();
+        XPath xpath = xpathfactory.newXPath();
+        NamespaceContext context = new NamespaceContextMap(
+            Utils.xmlNamespaces);
+        xpath.setNamespaceContext(context);
+        
+        return xpath;
+    }
+    
+    // Fill in the resource instance.
+    private OrganizationCnesPreRegistration fillResourceInstance(
+        IdType theId,
+        String responseBody,
+        String preRegistrationSituationCode)
+        throws ParserConfigurationException,
+               SAXException,
+               IOException,
+               XPathExpressionException {
+        
+        // The resource instance to be returned.
+        OrganizationCnesPreRegistration retVal
+            = new OrganizationCnesPreRegistration();
+            
+        // The logical ID replicates the Organization's CNES.
+        retVal.setId(theId);
+        
+        // Document representing the XML content.
+        Document document = createDocumentFromXml(responseBody);
+        
+        // The instance providing access to the XPath evaluation environment
+        // and expressions.
+        XPath xpath = setNamespacesForXpath();
+            
+        // CodigoCNES -> Identifier: CNES.
+        String cnes
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("cnes"),
+                0
+            );
+        if (cnes != null) {
+            retVal.addIdentifier()
+                .setSystem("urn:oid:" + Utils.oids.get("cnes"))
+                .setValue(cnes);
+         }
+
+        // numeroCNPJ -> Identifier: CNPJ.
+        String cnpj
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("cnpj"),
+                0
+            );
+        if (cnpj != null) {
+            retVal.addIdentifier()
+                .setSystem(Utils.namingSystems.get("cnpj"))
+                .setValue(cnpj);
+        }
+
+        // nomeFantasia -> name.
+        String name
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("name"),
+                0
+            );
+        if (name != null) {
+            retVal.setName(name);
+        }
+
+        // nomeEmpresarial -> alias.
+        String alias
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("alias"),
+                0
+            );
+        if (alias != null) {
+            retVal.addAlias(alias);
+        }
+            
+        // Endereco -> Address.
+        String street = extractSingleValueFromXml(document, xpath,
+            Utils.xpathExpressions.get("street"),
+            0
+        );
+        String number = extractSingleValueFromXml(document, xpath,
+            Utils.xpathExpressions.get("number"),
+            0
+        );
+        String neighborhood = extractSingleValueFromXml(document, xpath,
+            Utils.xpathExpressions.get("neighborhood"),
+            0
+        );
+        String city = extractSingleValueFromXml(document, xpath,
+            Utils.xpathExpressions.get("city"),
+            0
+        );
+        String state = extractSingleValueFromXml(document, xpath,
+            Utils.xpathExpressions.get("state"),
+            0
+        );
+        String postalCode = extractSingleValueFromXml(document, xpath,
+            Utils.xpathExpressions.get("postalCode"),
+            0
+        );
+        String cityCodeIbge
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("cityCodeIbge"),
+                0
+            );
+        if (street != null || number != null || neighborhood != null
+                || city != null || state != null || postalCode != null
+                || cityCodeIbge != null) {
+
+            String addressTextTemplate = "{0}, {1} - {2} - {3} - {4}";
+            String addressText = java.text.MessageFormat.format(
+                addressTextTemplate,
+                (street != null ? street : "<SEM LOGRADOURO>"),
+                (number != null
+                    ? number
+                    : new String(
+                        "<SEM NÙMERO>".getBytes("ISO-8859-1"), "UTF-8")
+                    ),
+                (neighborhood != null ? neighborhood : "<SEM BAIRRO>"),
+                (city != null ? city : "<SEM CIDADE>"),
+                (state != null ? state : "<SEM UF>")
+            );
+                
+            Address address = new Address()
+                .setUse(Address.AddressUse.WORK)
+                .setType(Address.AddressType.BOTH)
+                .setText(addressText)
+                .setCity(city)
+                .setState(state)
+                .setPostalCode(postalCode)
+                .setCountry("BRA");
+
+            // Extensions for IBGE codes.
+            if (cityCodeIbge != null) {
+                Extension cityCodeIbgeExtension
+                    = new Extension(Utils.extensions.get("cityCodeIbge"));
+                cityCodeIbgeExtension.setValue(
+                    new Coding()
+                        .setSystem("urn:oid:" + Utils.oids.get("ibgeCode"))
+                        .setCode(cityCodeIbge)
+                        .setDisplay(
+                            new String(
+                                "Código do município no IBGE"
+                                    .getBytes("ISO-8859-1"),
+                                "UTF-8"
+                            )
+                        )
+                );
+                address.addExtension(cityCodeIbgeExtension);
+            }
+
+            retVal.addAddress(address);
+                
+        }
+            
+        // dataAtualizacao -> Extension (update date).
+        String updateDate
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("updateDate"),
+                0
+            );
+        if (updateDate != null) {
+            retVal.setUpdateDate(
+                new DateType(updateDate)
+            );
+        }
+
+        // tipoNaturezaJuridica -> Extension (Legal Nature Category).
+        String legalNatureCategory
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("legalNatureCategory"),
+                0
+            );
+        String legalNatureCategoryDisplay
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("legalNatureCategoryDisplay"),
+                0
+            );
+        if (legalNatureCategory != null
+            || legalNatureCategoryDisplay != null) {
+            retVal.setLegalNatureCategory(
+                new Coding()
+                    .setSystem(
+                        Utils.namingSystems.get("categoriaNaturezaJuridica")
+                    )
+                    .setCode(legalNatureCategory)
+                    .setDisplay(legalNatureCategoryDisplay)
+            );
+        }
+
+        // codigoNaturezaJuridicaConcla -> Extension (Legal Nature Code).
+        String legalNatureCode
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("legalNatureCode"),
+                0
+            );
+        String legalNatureCodeDisplay
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("legalNatureCodeDisplay"),
+                0
+            );
+        if (legalNatureCode != null
+            || legalNatureCodeDisplay != null) {
+                
+            // The correct format for the Legal Nature Code, according to
+            // the Brazilian Institute of Geography and Statistics (IBGE).
+            String formattedLegalNatureCode
+                = (legalNatureCode != null
+                    ? legalNatureCode.substring(0, 3)
+                        + "-"
+                        + legalNatureCode.substring(3)
+                    : legalNatureCode);
+                
+            retVal.setLegalNatureCode(
+                new Coding()
+                    .setSystem(
+                        Utils.namingSystems.get("codigoNaturezaJuridica")
+                    )
+                    .setCode(formattedLegalNatureCode)
+                    .setDisplay(legalNatureCodeDisplay)
+            );
+        }
+            
+        // CNPJMantenedora -> Extension (Maintainer's CNPJ).
+        String maintainerCnpj
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("maintainerCnpj"),
+                0
+            );
+        if (maintainerCnpj != null) {
+            retVal.setMaintainerCnpj(
+                new Coding()
+                    .setSystem(Utils.namingSystems.get("cnpj"))
+                    .setCode(maintainerCnpj)
+                    .setDisplay(
+                        new String(
+                            "Número do CNPJ da mantenedora"
+                                .getBytes("ISO-8859-1"),
+                            "UTF-8"
+                        )
+                    )
+            );
+        }
+
+        // tipoNaturezaJuridicaMantenedora
+        //     -> Extension (Maintainer's Legal Nature Category).
+        String maintainerLegalNatureCategory
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("maintainerLegalNatureCategory"),
+                0
+            );
+        String maintainerLegalNatureCategoryDisplay
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get(
+                    "maintainerLegalNatureCategoryDisplay"
+                ),
+                0
+            );
+        if (maintainerLegalNatureCategory != null
+            || maintainerLegalNatureCategoryDisplay != null) {
+            retVal.setMaintainerLegalNatureCategory(
+                new Coding()
+                    .setSystem(
+                        Utils.namingSystems.get("categoriaNaturezaJuridica")
+                    )
+                    .setCode(maintainerLegalNatureCategory)
+                    .setDisplay(maintainerLegalNatureCategoryDisplay)
+            );
+        }
+
+        // codigoNaturezaJuridicaConclaMantenedora
+        //     -> Extension (Maintainer's Legal Nature Code).
+        String maintainerLegalNatureCode
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("maintainerLegalNatureCode"),
+                0
+            );
+        String maintainerLegalNatureCodeDisplay
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get(
+                    "maintainerLegalNatureCodeDisplay"
+                ),
+                0
+            );
+        if (maintainerLegalNatureCode != null
+            || maintainerLegalNatureCodeDisplay != null) {
+                
+            // The correct format for the Legal Nature Code, according to
+            // the Brazilian Institute of Geography and Statistics (IBGE).
+            String formattedMaintainerLegalNatureCode
+                = (maintainerLegalNatureCode != null
+                    ? maintainerLegalNatureCode.substring(0, 3)
+                        + "-"
+                        + maintainerLegalNatureCode.substring(3)
+                    : maintainerLegalNatureCode);
+                
+            retVal.setMaintainerLegalNatureCode(
+                new Coding()
+                    .setSystem(
+                        Utils.namingSystems.get("codigoNaturezaJuridica")
+                    )
+                    .setCode(formattedMaintainerLegalNatureCode)
+                    .setDisplay(maintainerLegalNatureCodeDisplay)
+            );
+        }
+
+        // Situação do Pré-cadastro
+        //     -> Extension (The situation of the pre-registration for the
+        //                   Organization).
+        if (preRegistrationSituationCode != null) {
+            retVal.setPreRegistrationSituation(
+                new Coding()
+                    .setSystem(
+                        Utils.namingSystems.get("situacaoPreCadastro")
+                    )
+                    .setCode(preRegistrationSituationCode)
+                    .setDisplay(
+                        Utils.preRegistrationSituations.get(
+                            preRegistrationSituationCode
+                        )
+                    )
+            );
+        }
+
+        // Phones -> contact
+        int phoneCount = countNodesFromXml(document, xpath,
+            Utils.xpathExpressions.get("phones"));
+        for (int i = 0; i < phoneCount; i++) {
+            String phoneNumber
+                = extractSingleValueFromXml(document, xpath,
+                    Utils.xpathExpressions.get("phoneNumber"),
+                    i
+                );
+            if (phoneNumber != null) {
+                String phoneTemplate = "{0} {1}";
+                String phone = java.text.MessageFormat.format(
+                    phoneTemplate,
+                    extractSingleValueFromXml(document, xpath,
+                        Utils.xpathExpressions.get("phoneAreaCode"),
+                        i
+                    ),
+                    phoneNumber
+                );
+                retVal.addContact()
+                    .addTelecom(
+                        new ContactPoint()
+                            .setSystem(ContactPoint.ContactPointSystem.PHONE)
+                            .setValue(phone)
+                            .setUse(ContactPoint.ContactPointUse.WORK)
+                    )
+                    .setPurpose(
+                        new CodeableConcept(
+                            new Coding()
+                                .setSystem(Utils.namingSystems.get("phoneType"))
+                                .setCode(
+                                    extractSingleValueFromXml(document, xpath,
+                                        Utils.xpathExpressions.get("phoneType"),
+                                        i
+                                    )
+                                )
+                                .setDisplay(
+                                    extractSingleValueFromXml(document, xpath,
+                                        Utils.xpathExpressions.get(
+                                            "phoneDescription"
+                                        ),
+                                        i
+                                    )
+                                )
+                        )
+                    );
+            }
+        }
+            
+        // Email -> contact
+        String email
+            = extractSingleValueFromXml(document, xpath,
+                Utils.xpathExpressions.get("email"),
+                0
+            );
+        if (email != null) {
+            retVal.addContact()
+                .addTelecom(
+                    new ContactPoint()
+                        .setSystem(ContactPoint.ContactPointSystem.EMAIL)
+                        .setValue(email)
+                        .setUse(ContactPoint.ContactPointUse.WORK)
+                )
+                .setPurpose(
+                    new CodeableConcept(
+                        new Coding()
+                            .setSystem(Utils.namingSystems.get("emailType"))
+                            .setCode(
+                                extractSingleValueFromXml(document, xpath,
+                                    Utils.xpathExpressions.get("emailType"),
+                                    0
+                                )
+                            )
+                    )
+                );
+        }
+        
+        return retVal;
     }
     
     // For debugging purposes.
