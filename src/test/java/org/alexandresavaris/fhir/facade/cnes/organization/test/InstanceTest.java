@@ -11,6 +11,7 @@ import ca.uhn.fhir.test.utilities.server.RestfulServerExtension;
 import ca.uhn.fhir.util.TestUtil;
 import ca.uhn.fhir.util.VersionUtil;
 import java.nio.charset.StandardCharsets;
+import org.alexandresavaris.fhir.facade.cnes.organization.preregistration.util.Utils;
 import org.alexandresavaris.fhir.facade.cnes.organization.test.provider.OrganizationCnesPreRegistrationResourceProvider;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -28,6 +29,8 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 public class InstanceTest {
     // The logical ID for all the tests.
     private final String logicalId = "1234567";
+    // The Pre-registration Situation for all the tests.
+    private final String preRegistrationSituationCode = "D";
     
     /*
      * Use a narrative generator. This is a completely optional step, but can be
@@ -135,9 +138,9 @@ public class InstanceTest {
         }
     }
     
-    // Test for the correct use of HTTP methods.
+    // Test for the correct use of Read.
     @Test
-    public void testHttpMethods() throws Exception {
+    public void testRead() throws Exception {
         String output;
 
         HttpRequestBase httpGet
@@ -171,6 +174,76 @@ public class InstanceTest {
                 = new HttpPost(
                     ourServer.getBaseUrl()
                         + "/Organization/" + this.logicalId
+                );
+            status = ourClient.execute(httpPost);
+            output = IOUtils.toString(
+                status.getEntity().getContent(), StandardCharsets.UTF_8
+            );
+            assertEquals(400, status.getStatusLine().getStatusCode());
+            assertThat(output)
+                .contains(
+                    "Invalid request: The FHIR endpoint on this server does not know how to handle POST operation"
+                );
+            
+        } finally {
+            IOUtils.closeQuietly(status.getEntity().getContent());
+        }
+    }
+
+    // Test for the correct use of Search.
+    @Test
+    public void testSearch() throws Exception {
+        String output;
+
+        HttpRequestBase httpGet
+            = new HttpGet(
+                ourServer.getBaseUrl()
+                    + "/Organization"
+                    + "?identifier="
+                        + "urn:oid:"
+                        + Utils.oids.get("cnes")
+                        + "%7C"  // URL-encoding the "|" character.
+                        + this.logicalId
+                    + "&preRegistrationSituation="
+                        + Utils.namingSystems.get("situacaoPreCadastro")
+                        + "%7C"  // URL-encoding the "|" character.
+                        + this.preRegistrationSituationCode
+            );
+        CloseableHttpResponse status = ourClient.execute(httpGet);
+        
+        try {
+            
+            output = IOUtils.toString(
+                status.getEntity().getContent(), StandardCharsets.UTF_8
+            );
+            assertEquals(200, status.getStatusLine().getStatusCode());
+            assertThat(output).contains("<Bundle");
+            assertThat(status.getFirstHeader("X-Powered-By").getValue())
+                .contains("HAPI FHIR " + VersionUtil.getVersion());
+            assertThat(status.getFirstHeader("X-Powered-By").getValue())
+                .contains("REST Server (FHIR Server; FHIR "
+                    + ourCtx.getVersion().getVersion().getFhirVersionString()
+                    + "/" + ourCtx.getVersion().getVersion().name() + ")");
+            
+	} finally {
+            IOUtils.closeQuietly(status.getEntity().getContent());
+        }
+
+	try {
+
+            HttpRequestBase httpPost
+                = new HttpPost(
+                ourServer.getBaseUrl()
+                    + "/Organization"
+                    + "?identifier="
+                        + "urn:oid:"
+                        + Utils.oids.get("cnes")
+                        + "%7C"  // URL-encoding the "|" character.
+                        + this.logicalId
+                    + "&preRegistrationSituation="
+                        + Utils.namingSystems.get("situacaoPreCadastro")
+                        + "%7C"  // URL-encoding the "|" character.
+                        + this.preRegistrationSituationCode
                 );
             status = ourClient.execute(httpPost);
             output = IOUtils.toString(

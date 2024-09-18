@@ -2,7 +2,12 @@ package org.alexandresavaris.fhir.facade.cnes.organization.test.provider;
 
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Read;
+import ca.uhn.fhir.rest.annotation.RequiredParam;
+import ca.uhn.fhir.rest.annotation.Search;
+import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
+import java.util.Arrays;
+import java.util.List;
 import org.alexandresavaris.fhir.facade.cnes.organization.preregistration.model.OrganizationCnesPreRegistration;
 import org.alexandresavaris.fhir.facade.cnes.organization.preregistration.util.Utils;
 import org.hl7.fhir.r4.model.*;
@@ -44,14 +49,51 @@ public class OrganizationCnesPreRegistrationResourceProvider
 
         // Fill in the resource instance.
         OrganizationCnesPreRegistration retVal
-            = fillResourceInstance(theId);
+            = fillResourceInstance(theId, null);
         
         return retVal;
     }
 
+    /**
+     * The "@Search" annotation indicates that this method supports the
+     * search operation.
+     *
+     * @param theId The identifier of the resource instance to be searched for.
+     * @param preRegistrationSituation The pre-registration situation for the
+     * Organization.
+     * @return Returns a resource list matching this identifier, or null if none
+     * exists.
+     * @throws java.lang.Exception
+     */
+    @Search()
+    public List<OrganizationCnesPreRegistration> search(
+        @RequiredParam(name = OrganizationCnesPreRegistration.SP_IDENTIFIER)
+            TokenParam theId,
+        @RequiredParam(name = OrganizationCnesPreRegistration.SP_PRE_REGISTRATION_SITUATION)
+            TokenParam preRegistrationSituation) throws Exception {
+
+        // System and value for the identifier.
+        String identifierSystem = theId.getSystem();
+        String identifier = theId.getValue();
+
+        // System and value for the pre-registration situation code.
+        String preRegistrationSituationSystem
+            = preRegistrationSituation.getSystem();
+        String preRegistrationSituationCode
+            = preRegistrationSituation.getValue();
+
+        // Fill in the resource instance.
+        OrganizationCnesPreRegistration retVal
+            = fillResourceInstance(
+                new IdType(identifier), preRegistrationSituationCode
+            );
+
+        return Arrays.asList(retVal);
+    }
+    
     // Fill in the resource instance.
-    private OrganizationCnesPreRegistration fillResourceInstance(IdType theId)
-        throws Exception {
+    private OrganizationCnesPreRegistration fillResourceInstance(
+        IdType theId, String preRegistrationSituationCode) throws Exception {
         
         // The resource instance to be returned.
         OrganizationCnesPreRegistration retVal
@@ -187,6 +229,24 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 .setDisplay(Utils.preRegistrationSituations.get("A"))
         );
 
+        // Situação do Pré-cadastro
+        //     -> Extension (The situation of the pre-registration for the
+        //                   Organization).
+        if (preRegistrationSituationCode != null) {
+            retVal.setPreRegistrationSituation(
+                new Coding()
+                    .setSystem(
+                        Utils.namingSystems.get("situacaoPreCadastro")
+                    )
+                    .setCode(preRegistrationSituationCode)
+                    .setDisplay(
+                        Utils.preRegistrationSituations.get(
+                            preRegistrationSituationCode
+                        )
+                    )
+            );
+        }
+        
         // Telefone -> contact
         String phoneTemplate = "{0} {1}";
         String phone = java.text.MessageFormat.format(
