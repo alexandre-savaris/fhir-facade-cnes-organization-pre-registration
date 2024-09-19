@@ -1,4 +1,4 @@
-package org.alexandresavaris.fhir.facade.cnes.organization.test;
+package org.alexandresavaris.fhir.facade.cnes.organization.preregistration.test;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.narrative.CustomThymeleafNarrativeGenerator;
@@ -12,7 +12,7 @@ import ca.uhn.fhir.util.TestUtil;
 import ca.uhn.fhir.util.VersionUtil;
 import java.nio.charset.StandardCharsets;
 import org.alexandresavaris.fhir.facade.cnes.organization.preregistration.util.Utils;
-import org.alexandresavaris.fhir.facade.cnes.organization.test.provider.OrganizationCnesPreRegistrationResourceProvider;
+import org.alexandresavaris.fhir.facade.cnes.organization.preregistration.test.provider.OrganizationCnesPreRegistrationResourceProvider;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;

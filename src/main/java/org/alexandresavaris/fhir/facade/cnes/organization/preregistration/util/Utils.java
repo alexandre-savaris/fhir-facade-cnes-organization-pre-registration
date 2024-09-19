@@ -156,6 +156,6 @@ public class Utils {
         // Insert Pre-registration Situation codes.
         preRegistrationSituations.put("A", "ATIVO");
         preRegistrationSituations.put("D", "DESATIVADO");
-        preRegistrationSituations.put("E", "EXCLUÍDO");
+        preRegistrationSituations.put("E", "EXCLUIDO");
     }
 }

@@ -1,4 +1,4 @@
-package org.alexandresavaris.fhir.facade.cnes.organization.test.provider;
+package org.alexandresavaris.fhir.facade.cnes.organization.preregistration.test.provider;
 
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Read;

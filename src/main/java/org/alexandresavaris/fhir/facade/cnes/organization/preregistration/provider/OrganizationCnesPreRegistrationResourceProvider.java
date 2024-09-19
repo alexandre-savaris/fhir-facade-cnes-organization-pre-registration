@@ -1,6 +1,7 @@
 package org.alexandresavaris.fhir.facade.cnes.organization.preregistration.provider;
 
 import ca.uhn.fhir.interceptor.api.IInterceptorBroadcaster;
+import ca.uhn.fhir.model.api.annotation.Description;
 import ca.uhn.fhir.rest.annotation.IdParam;
 import ca.uhn.fhir.rest.annotation.Read;
 import ca.uhn.fhir.rest.annotation.RequiredParam;
@@ -9,6 +10,7 @@ import ca.uhn.fhir.rest.api.server.RequestDetails;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.server.IResourceProvider;
 import ca.uhn.fhir.rest.server.exceptions.InternalErrorException;
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import ca.uhn.fhir.rest.server.interceptor.ServerInterceptorUtil;
 import java.io.IOException;
 import java.io.StringReader;
@@ -156,28 +158,79 @@ public class OrganizationCnesPreRegistrationResourceProvider
      * @return Returns a resource list matching this identifier, or null if none
      * exists.
      */
+    @Description(
+        shortDefinition
+            = "Pesquisa um Estabelecimento de Sa\u00fade pelo seu Identificador e c\u00f3digo de Pr\u00e9-cadastro."
+    )
     @Search()
     public List<OrganizationCnesPreRegistration> search(
-        @RequiredParam(name = OrganizationCnesPreRegistration.SP_IDENTIFIER)
-            TokenParam theId,
-        @RequiredParam(name = OrganizationCnesPreRegistration.SP_PRE_REGISTRATION_SITUATION)
-            TokenParam preRegistrationSituation,
+        @Description(
+            shortDefinition
+                = "Identificador do Estabelecimento de Sa\u00fade com Sistema de Terminologia = urn:oid:2.16.840.1.113883.13.36."
+        )
+            @RequiredParam(name = OrganizationCnesPreRegistration.SP_IDENTIFIER)
+                TokenParam theId,
+        @Description(
+            shortDefinition
+                = "C\u00f3digo da Situa\u00e7\u00e3o de Pr\u00e9-cadastro do Estabelecimento de Sa\u00fade com Sistema de Terminologia = https://alexandresavaris.org/fhir/r4/NamingSystem/cnes/SituacaoPreCadastro."
+        )
+            @RequiredParam(name = OrganizationCnesPreRegistration.SP_PRE_REGISTRATION_SITUATION)
+                TokenParam preRegistrationSituation,
         RequestDetails theRequestDetails,
         IInterceptorBroadcaster theInterceptorBroadcaster) {
         // The resource instance to be returned.
         OrganizationCnesPreRegistration retVal = null;
 
-        // System and value for the identifier.
-        String identifierSystem = theId.getSystem();
-        String identifier = theId.getValue();
-
-        // System and value for the pre-registration situation code.
-        String preRegistrationSituationSystem
-            = preRegistrationSituation.getSystem();
-        String preRegistrationSituationCode
-            = preRegistrationSituation.getValue();
-
         try {
+
+            // System for the identifier.
+            String identifierSystem = theId.getSystem();
+            if (!identifierSystem.equals("urn:oid:" + Utils.oids.get("cnes"))) {
+                // TODO: verify why the message used for the exception doesn't
+                // appear in the OperationOutcome instance.
+                throw new UnprocessableEntityException(
+                    new String(
+                        "O sistema de terminologia (terminology system) informado na requisição ("
+                            .getBytes("ISO-8859-1"),
+                        "UTF-8"
+                    )
+                    + identifierSystem
+                    + new String(
+                        ") não corresponde ao sistema de terminologia esperado pelo servidor."
+                            .getBytes("ISO-8859-1"),
+                        "UTF-8"
+                    )
+                );
+            }
+
+            // System for the pre-registration situation code.
+            String preRegistrationSituationSystem
+                = preRegistrationSituation.getSystem();
+            if (!preRegistrationSituationSystem.equals(
+                Utils.namingSystems.get("situacaoPreCadastro"))
+                ) {
+                // TODO: verify why the message used for the exception doesn't
+                // appear in the OperationOutcome instance.
+                throw new UnprocessableEntityException(
+                    new String(
+                        "O sistema de terminologia (terminology system) informado na requisição ("
+                            .getBytes("ISO-8859-1"),
+                        "UTF-8"
+                    )
+                    + preRegistrationSituationSystem
+                    + new String(
+                        ") não corresponde ao sistema de terminologia esperado pelo servidor."
+                            .getBytes("ISO-8859-1"),
+                        "UTF-8"
+                    )
+                );
+            }
+
+            // Value for the identifier.
+            String identifier = theId.getValue();
+            // System and value for the pre-registration situation code.
+            String preRegistrationSituationCode
+                = preRegistrationSituation.getValue();
 
             // Access the SOAP Webservice.
             String responseBody = accessSoapWebservice(
@@ -289,26 +342,35 @@ public class OrganizationCnesPreRegistrationResourceProvider
                 "tipTel:descricaoTipoTelefone"
             );
             
-        // For debugging purposes.
-        // Uncomment to see the response body from the SOAP Webservice.
-        System.out.println(
-            "----------------------------------------------------------"
-        );
-        System.out.println(response.statusCode());
-        System.out.println(responseBody);
-        System.out.println(
-            "----------------------------------------------------------"
-        );
+//        // For debugging purposes.
+//        // Uncomment to see the response body from the SOAP Webservice.
+//        System.out.println(
+//            "----------------------------------------------------------"
+//        );
+//        System.out.println(response.statusCode());
+//        System.out.println(responseBody);
+//        System.out.println(
+//            "----------------------------------------------------------"
+//        );
 
         int responseStatusCode = response.statusCode();
         if (responseStatusCode != 200) {
             // TODO: verify why the message used for the exception doesn't
             // appear in the OperationOutcome instance.
             throw new InternalErrorException(
-                "O webservice SOAP retornou o código de status HTTP "
-                    + responseStatusCode
-                    + " ao acessar os dados do estabelecimento de saúde com o Id: "
-                    + identifier);
+                new String(
+                    "O webservice SOAP retornou o código de status HTTP "
+                        .getBytes("ISO-8859-1"),
+                    "UTF-8"
+                )
+                + responseStatusCode
+                + new String(
+                    " ao acessar os dados do estabelecimento de saúde com o Id: "
+                        .getBytes("ISO-8859-1"),
+                    "UTF-8"
+                )
+                + identifier
+            );
         }
             
         return responseBody;
