@@ -41,6 +41,10 @@ The facade accesses the homologation instance of the SOAP webservice, whose data
 
 ## Release Notes
 
+### 1.1.0
+
+Added `SearchParameter` for Pre-registration situation.
+
 ### 1.0.0
 
 Initial release.
