@@ -1,0 +1,63 @@
+{
+  "resourceType": "StructureDefinition",
+  "id": "searchparameter-cnes-situacao-pre-cadastro",
+  "language": "pt-BR",
+  "url": "https://alexandresavaris.org/fhir/r4/SearchParameter/cnes/SituacaoPreCadastro",
+  "version": "1.0.0",
+  "name": "SearchParameterSituacaoPreCadastro",
+  "title": "Parâmetro de busca dos dados de Pré-cadastro de um Estabelecimento de Saúde no CNES",
+  "status": "active",
+  "experimental": false,
+  "date": "2024-10-08",
+  "publisher": "Alexandre Savaris",
+  "contact": [
+    {
+      "name": "Alexandre Savaris",
+      "telecom": [
+        {
+          "system": "email",
+          "value": "alexandre.savaris@gmail.com"
+        }
+      ]
+    }
+  ],
+  "description": "Parâmetro de busca dos dados de Pré-cadastro de um Estabelecimento de Saúde no Cadastro Nacional de Estabelecimentos de Saúde (CNES) pelo código de situação mantido pelo Departamento de Informação e Informática do Sistema Único de Saúde (DATASUS).",
+  "jurisdiction": [
+    {
+      "coding": [
+        {
+          "system": "urn:iso:std:iso:3166",
+          "code": "BRA",
+          "display": "Brazil",
+          "userSelected": false
+        }
+      ]
+    }
+  ],
+  "purpose": "Permitir a busca dos dados de Pré-cadastro de um Estabelecimento de Saúde no CNES por meio de um código definido e mantido pelo DATASUS.",
+  "fhirVersion": "4.0.1",
+  "kind": "resource",
+  "abstract": true,
+  "type": "SearchParameter",
+  "baseDefinition": "http://hl7.org/fhir/StructureDefinition/SearchParameter",
+  "derivation": "constraint",
+  "differential": {
+    "element": [
+      {
+        "id": "SearchParameter.base",
+        "path": "SearchParameter.base",
+        "fixedCode": "Organization"
+      },
+      {
+        "id": "SearchParameter.type",
+        "path": "SearchParameter.type",
+        "fixedCode": "token"
+      },
+      {
+        "id": "SearchParameter.expression",
+        "path": "SearchParameter.expression",
+        "fixedString": "Organization.extension('https://alexandresavaris.org/fhir/r4/Extension/cnes/SituacaoPreCadastro').value.as(Coding).code"
+      }
+    ]
+  }
+}
